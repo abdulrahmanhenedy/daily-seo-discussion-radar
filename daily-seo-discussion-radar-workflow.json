@@ -1,0 +1,1594 @@
+{
+  "id": "UZdqs5xS3duzZzeC",
+  "name": "Daily SEO Discussion Radar (LinkedIn + Reddit via Apify + Stack Exchange)",
+  "active": true,
+  "isArchived": false,
+  "versionId": "c3eaa6d2-b41d-4bc2-aa6a-00891ee745ac",
+  "activeVersionId": "c3eaa6d2-b41d-4bc2-aa6a-00891ee745ac",
+  "triggerCount": 1,
+  "createdAt": "2026-05-07T02:42:56.166Z",
+  "updatedAt": "2026-05-14T20:27:15.025Z",
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "connections": {
+    "Manual Trigger - Test Start": {
+      "main": [
+        [
+          {
+            "node": "Build Source Requests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger - Daily": {
+      "main": [
+        [
+          {
+            "node": "Build Source Requests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Source Requests": {
+      "main": [
+        [
+          {
+            "node": "Fetch Source Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Source Request": {
+      "main": [
+        [
+          {
+            "node": "Normalize, Dedupe, Score, Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize, Dedupe, Score, Digest": {
+      "main": [
+        [
+          {
+            "node": "IF - Real Items Collected?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Real Items Collected?": {
+      "main": [
+        [
+          {
+            "node": "Notion - Upsert Discussion Pages",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Empty-Run Email Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion - Upsert Discussion Pages": {
+      "main": [
+        [
+          {
+            "node": "Build Google Sheets Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Google Sheets Rows": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Append or Update Discussion Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - Append or Update Discussion Row": {
+      "main": [
+        [
+          {
+            "node": "Create Founder Follow-up Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Founder Follow-up Task": {
+      "main": [
+        [
+          {
+            "node": "Prepare Email Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Email Digest": {
+      "main": [
+        [
+          {
+            "node": "Send Email - Daily SEO Discussion Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Empty-Run Email Digest": {
+      "main": [
+        [
+          {
+            "node": "Send Email - Daily SEO Discussion Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "783e3fef-e974-4d6b-805f-51d71bdb7a39",
+      "name": "Manual Trigger - Test Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        160,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "28812ece-72f4-454c-9728-c65e7aac85cc",
+      "name": "Schedule Trigger - Daily",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        160,
+        464
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst config = {\n  firecrawl_base_url: 'https://firecrawl.example.com',\n  searxng_base_url: 'https://search.example.com',\n  apify_base_url: 'https://api.apify.com',\n  apify_linkedin_actor_id: 'supreme_coder/linkedin-post',\n  apify_reddit_actor_id: 'spry_wholemeal/reddit-scrape',\n  linkedin_recent_posts_per_source: 3,\n  linkedin_scrape_until_days: 3,\n  reddit_recent_posts_per_query: 5,\n  digest_email: 'you@example.com',\n  digest_from_email: 'radar@example.com',\n  google_sheet_id: 'YOUR_GOOGLE_SHEET_ID',\n  google_sheet_tab: 'Daily Radar',\n  notion_database_id: 'YOUR_NOTION_DATABASE_ID',\n  openrouter_model: 'deepseek/deepseek-v4-pro',\n  openrouter_fallback_model: 'openai/gpt-oss-120b',\n  openrouter_reasoning_effort: 'high',\n  openrouter_temperature: 0.35,\n  openrouter_top_p: 0.9,\n  max_storage_rows: 12,\n  firecrawl_hydration_limit: 4,\n  firecrawl_hydration_min_chars: 450\n};\n\nconst linkedinUrls = [\n  'https://www.linkedin.com/in/example-profile/recent-activity/all/',\n  'https://www.linkedin.com/in/another-profile/recent-activity/all/',\n];\nconst redditSubreddits = ['seo', 'bigseo', 'content_marketing'];\nconst redditTerms = ['seo', 'ai SEO', 'Topical maps', 'content marketing'];\nconst stackTerms = ['seo', 'ai seo', 'marketing', 'content marketing'];\nconst discoveryKeywords = ['seo', 'ai SEO', 'Semantic SEO'];\n\nfunction enc(v) { return encodeURIComponent(String(v || '')); }\nfunction actor(id) {\n  return String(id || '').replace('spry_wholemeal/reddit-scrape', 'spry_wholemeal/reddit-scraper').split('/').join('~');\n}\nfunction item(json) { return { json: { ...json, config } }; }\n\nconst req = [];\nconst from14 = Math.floor((Date.now() - 14 * 86400 * 1000) / 1000);\nconst scrapeUntil = new Date(Date.now() - Number(config.linkedin_scrape_until_days || 3) * 86400 * 1000).toISOString().slice(0, 10);\n\nfor (const url of linkedinUrls) {\n  req.push(item({\n    kind: 'linkedin_firecrawl',\n    branch: 'linkedin_firecrawl',\n    source_url: url,\n    method: 'POST',\n    auth_env: 'FIRECRAWL_API_KEY',\n    url: config.firecrawl_base_url + '/v2/scrape',\n    body: { url, formats: ['markdown'], onlyMainContent: true, waitFor: 2500, timeout: 60000, storeInCache: false }\n  }));\n}\n\nreq.push(item({\n  kind: 'linkedin_apify',\n  branch: 'linkedin_apify',\n  method: 'POST',\n  auth_env: 'APIFY_API_TOKEN',\n  source_urls: linkedinUrls,\n  url: config.apify_base_url + '/v2/acts/' + actor(config.apify_linkedin_actor_id) + '/run-sync-get-dataset-items?timeout=240',\n  body: { urls: linkedinUrls, limitPerSource: Number(config.linkedin_recent_posts_per_source || 3), scrapeUntil, deepScrape: true, rawData: false }\n}));\n\nfor (const kw of discoveryKeywords) {\n  const q = 'site:linkedin.com ' + kw;\n  req.push(item({\n    kind: 'linkedin_discovery',\n    branch: 'linkedin_discovery',\n    query: q,\n    method: 'GET',\n    url: config.searxng_base_url + '/search?q=' + enc(q) + '&format=json&time_range=day'\n  }));\n}\n\nfor (const subreddit of redditSubreddits) {\n  req.push(item({\n    kind: 'reddit_apify',\n    branch: 'reddit_apify',\n    subreddit,\n    terms: redditTerms,\n    method: 'POST',\n    auth_env: 'APIFY_API_TOKEN',\n    url: config.apify_base_url + '/v2/acts/' + actor(config.apify_reddit_actor_id) + '/run-sync-get-dataset-items?timeout=240',\n    body: {\n      mode: 'search',\n      search: {\n        queries: redditTerms,\n        sort: 'new',\n        timeframe: 'week',\n        maxPostsPerQuery: Number(config.reddit_recent_posts_per_query || 5),\n        restrictToSubreddit: subreddit,\n        commentsMode: 'high_engagement',\n        commentsMaxTopLevel: 20,\n        commentsMaxDepth: 2,\n        commentsHighEngagementMinScore: 0,\n        commentsHighEngagementMinComments: 0,\n        commentsHighEngagementFilterPosts: false\n      },\n      includeRaw: false,\n      proxyConfiguration: { useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'] },\n      tag: subreddit + ' | daily seo radar'\n    }\n  }));\n}\n\nfor (const term of stackTerms) {\n  req.push(item({\n    kind: 'stackexchange',\n    branch: 'stackexchange',\n    site: 'webmasters',\n    term,\n    method: 'GET',\n    url: 'https://api.stackexchange.com/2.3/search?order=desc&sort=activity&site=webmasters&intitle=' + enc(term) + '&pagesize=8&fromdate=' + from14 + '&filter=withbody'\n  }));\n}\nreq.push(item({\n  kind: 'stackexchange',\n  branch: 'stackexchange',\n  site: 'webmasters',\n  term: 'seo fallback',\n  method: 'GET',\n  fallback: true,\n  url: 'https://api.stackexchange.com/2.3/search?order=desc&sort=votes&site=webmasters&intitle=seo&pagesize=5&filter=withbody'\n}));\n\nreturn req;\n"
+      },
+      "id": "038f0a3f-a864-4d7c-bf9c-27b5a3a0c796",
+      "name": "Build Source Requests",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "method": "={{ $json.method }}",
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer $env.YOUR_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json, text/plain, */*"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 n8n SEO radar"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.body || {} }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "text",
+              "outputPropertyName": "body"
+            }
+          },
+          "timeout": 120000
+        }
+      },
+      "id": "ee730b68-c94d-43b4-8e53-4a2fc8e660f6",
+      "name": "Fetch Source Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        768,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst reqs = $('Build Source Requests').all().map(i => i.json);\nconst started = new Date().toISOString();\nconst nl = String.fromCharCode(10);\nconst bs = String.fromCharCode(92);\nconst ws = new RegExp(bs + 's+', 'g');\nconst dateOnly = new RegExp('^' + bs + 'd{4}-' + bs + 'd{2}-' + bs + 'd{2}$', 'i');\nconst config = (reqs[0] && reqs[0].config) || {};\nconst httpRequest = this.helpers.httpRequest.bind(this.helpers);\nconst diagnostics = {\n  run_started_at: started,\n  branch_counts: { linkedin_firecrawl: 0, linkedin_apify: 0, linkedin_discovery: 0, reddit_apify: 0, stackexchange: 0 },\n  errors: [],\n  warnings: [],\n  empty_branches: [],\n  sample_items_by_branch: {}\n};\nconst collected = [];\n\nfunction parseBody(t) {\n  if (typeof t === 'object' && t !== null) return t;\n  try { return JSON.parse(String(t || '')); } catch { return { raw_body: String(t || '') }; }\n}\nfunction strip(v) {\n  return String(v || '').replace(/<[^>]+>/g, ' ').replace(/&quot;/g, '\"').replace(/&#39;/g, \"'\").replace(/&amp;/g, '&').replace(ws, ' ').trim();\n}\nfunction clean(v) { return String(v || '').replace(ws, ' ').trim(); }\nfunction at(obj, path) { return path.split('.').reduce((a, k) => (a && a[k] !== undefined ? a[k] : undefined), obj); }\nfunction firstString(obj, paths) {\n  for (const p of paths) {\n    const v = at(obj, p);\n    if (v !== undefined && v !== null && String(v).trim()) return String(v).trim();\n  }\n  return '';\n}\nfunction firstNumber(obj, paths) {\n  for (const p of paths) {\n    const n = Number(at(obj, p));\n    if (Number.isFinite(n)) return n;\n  }\n  return 0;\n}\nfunction hashtagsFrom(text) {\n  return Array.from(new Set((String(text || '').match(/#[A-Za-z0-9_]+/g) || []).map(t => t.toLowerCase())));\n}\nfunction junk(text) {\n  const value = clean(text);\n  const h = value.toLowerCase();\n  if (!value || dateOnly.test(value)) return true;\n  return ['join linkedin', 'sign up | linkedin', 'agree & join linkedin', 'email password (6+ characters)', 'skip to main content', 'too many requests'].some(p => h.includes(p));\n}\nfunction diag(level, branch, message, extra) {\n  const row = { branch, message, ...(extra || {}) };\n  diagnostics[level === 'error' ? 'errors' : 'warnings'].push(row);\n}\nfunction flatten(v) {\n  if (Array.isArray(v)) return v.flatMap(flatten);\n  if (v && typeof v === 'object') {\n    for (const k of ['items', 'data', 'results', 'datasetItems', 'dataset_items', 'posts', 'linkedin_posts']) {\n      if (Array.isArray(v[k])) return flatten(v[k]);\n    }\n    return [v];\n  }\n  return [];\n}\nfunction canonicalizeUrl(value) {\n  const input = String(value || '').trim().replace(/[)>\\]\\s'\".,;]+$/g, '');\n  if (!input) return '';\n  try {\n    const u = new URL(input.startsWith('/') ? 'https://www.reddit.com' + input : input);\n    for (const key of Array.from(u.searchParams.keys())) {\n      if (/^utm_|^trk$|trackingId|feedView|rcm/i.test(key)) u.searchParams.delete(key);\n    }\n    u.hash = '';\n    return u.toString().replace(/\\/$/, '');\n  } catch {\n    return input;\n  }\n}\nfunction add(item) {\n  const title = clean(item.title || '');\n  const text = clean(item.text || '');\n  const combined = [title, text].filter(Boolean).join(' ');\n  item.url = canonicalizeUrl(item.url);\n  if ((!item.url && !title) || junk(combined)) return false;\n  item.title = title || text.slice(0, 120);\n  item.text = text || title;\n  item.score = Number(item.score || 0);\n  item.comments_count = Number(item.comments_count || 0);\n  item.hashtags = Array.isArray(item.hashtags) ? item.hashtags : [];\n  item.raw = item.raw || {};\n  item.diagnostics = item.diagnostics || [];\n  collected.push(item);\n  diagnostics.branch_counts[item.collection_branch] += 1;\n  return true;\n}\nfunction commentsText(row) {\n  const pools = [row.comments, row.topComments, row.replies, row.commentTree].filter(Array.isArray);\n  const comments = [];\n  for (const pool of pools) {\n    for (const c of pool) {\n      const body = clean(c.body || c.text || c.comment || c.content || '');\n      if (body) comments.push(body);\n    }\n  }\n  return comments.slice(0, 5).join(' ');\n}\n\nfor (const [i, res] of $input.all().entries()) {\n  const req = reqs[(res.pairedItem && res.pairedItem.item) || i] || {};\n  const status = Number(res.json.statusCode || res.json.status || 0);\n  const body = parseBody(res.json.body !== undefined ? res.json.body : res.json);\n  if (status >= 400) diag(status >= 500 ? 'error' : 'warning', req.branch || 'unknown', 'HTTP request returned non-2xx status.', { status, source: req.source_url || req.query || req.subreddit || req.term || '' });\n\n  if (req.kind === 'linkedin_firecrawl') {\n    const md = body.data && body.data.markdown || body.markdown || body.raw_body || '';\n    if (junk(md)) diag('warning', 'linkedin_firecrawl', 'LinkedIn source page produced login/signup boilerplate or no markdown; Apify fallback used.', { url: req.source_url, status });\n    else diag('warning', 'linkedin_firecrawl', 'LinkedIn source page returned markdown, but source activity pages are discovery-only and were not stored as posts.', { url: req.source_url, chars: String(md).length });\n  }\n\n  if (req.kind === 'linkedin_discovery') {\n    const found = Array.isArray(body.results) ? body.results.filter(r => String(r.url || '').includes('linkedin.com')) : [];\n    diagnostics.branch_counts.linkedin_discovery += found.length;\n    if (!found.length) diag('warning', 'linkedin_discovery', 'SearXNG returned no LinkedIn JSON results or was rate-limited.', { query: req.query, status, body: String(body.raw_body || '').slice(0, 120) });\n  }\n\n  if (req.kind === 'linkedin_apify') {\n    const rows = flatten(body);\n    if (!rows.length || body.error) diag('warning', 'linkedin_apify', 'Apify LinkedIn fallback returned no usable rows or an error.', { status, error: body.error || body.message || '' });\n    for (const r of rows) {\n      const commentSignals = commentsText(r);\n      const text = clean(firstString(r, ['text', 'postText', 'post_text', 'content', 'commentary', 'description', 'caption']) + (commentSignals ? ' LinkedIn comment signals: ' + commentSignals : ''));\n      add({\n        platform: 'linkedin',\n        collection_branch: 'linkedin_apify',\n        collection_method: 'apify_linkedin_post',\n        source_label: firstString(r, ['inputUrl', 'sourceUrl', 'profileUrl', 'author.profileUrl']) || 'LinkedIn Apify fallback',\n        community: 'linkedin_post',\n        title: firstString(r, ['document.title', 'title', 'headline', 'author.name', 'authorName']) || text.slice(0, 120),\n        text,\n        url: firstString(r, ['url', 'postUrl', 'post_url', 'linkedinUrl', 'activityUrl', 'postLink']),\n        author: firstString(r, ['author.name', 'authorName', 'profileName', 'actor.name', 'companyName']),\n        published_at: firstString(r, ['publishedAt', 'published_at', 'postedAt', 'posted_at', 'createdAt', 'date', 'timeSincePosted']),\n        score: firstNumber(r, ['likesCount', 'likeCount', 'reactionsCount', 'totalReactionCount', 'stats.likes']),\n        comments_count: firstNumber(r, ['commentsCount', 'commentCount', 'numComments', 'stats.comments']),\n        hashtags: hashtagsFrom(text),\n        raw: r,\n        diagnostics: []\n      });\n    }\n  }\n\n  if (req.kind === 'reddit_apify') {\n    const rows = flatten(body);\n    if (!rows.length || body.error) diag('warning', 'reddit_apify', 'Apify Reddit actor returned no usable rows or an error.', { subreddit: req.subreddit, status, error: body.error || body.message || '' });\n    for (const r of rows) {\n      if (String(r.record_type || 'post') !== 'post') continue;\n      const ctext = commentsText(r);\n      const text = clean(firstString(r, ['text', 'body', 'selftext', 'content']) + (ctext ? ' Top Reddit comments: ' + ctext : ''));\n      add({\n        platform: 'reddit',\n        collection_branch: 'reddit_apify',\n        collection_method: 'apify_reddit_actor_spry_wholemeal',\n        source_label: Array.isArray(r.matched_search_queries) ? r.matched_search_queries.join(', ') : (req.terms || []).join(', '),\n        community: r.subreddit ? 'r/' + r.subreddit : 'r/' + req.subreddit,\n        title: r.title || '',\n        text,\n        url: r.permalink || r.url,\n        author: r.author || '',\n        published_at: r.created_utc_iso || r.createdAt || '',\n        score: r.score || 0,\n        comments_count: r.num_comments || r.commentCount || 0,\n        hashtags: [],\n        raw: { post_id: r.post_id, tag: r.tag },\n        diagnostics: []\n      });\n    }\n  }\n\n  if (req.kind === 'stackexchange') {\n    const rows = Array.isArray(body.items) ? body.items : [];\n    if (!rows.length) diag('warning', 'stackexchange', 'Stack Exchange query returned zero items.', { term: req.term, status });\n    for (const q of rows) {\n      add({\n        platform: 'stackexchange',\n        collection_branch: 'stackexchange',\n        collection_method: req.fallback ? 'stackexchange_api_fallback' : 'stackexchange_api_recent',\n        source_label: req.term,\n        community: req.site,\n        title: strip(q.title),\n        text: strip(q.body),\n        url: q.link,\n        author: q.owner && q.owner.display_name || '',\n        published_at: q.creation_date ? new Date(q.creation_date * 1000).toISOString() : '',\n        score: q.score || 0,\n        comments_count: q.answer_count || 0,\n        hashtags: (q.tags || []).map(t => '#' + t),\n        raw: { question_id: q.question_id },\n        diagnostics: []\n      });\n    }\n  }\n}\n\nconst seen = new Set();\nconst deduped = [];\nfor (const it of collected) {\n  const key = (it.url || [it.platform, it.title, it.author].join('|')).toLowerCase().replace(/[?#].*$/, '');\n  if (seen.has(key)) continue;\n  seen.add(key);\n  const hay = [it.title, it.text].join(' ').toLowerCase();\n  const hits = ['ai seo', 'semantic seo', 'topical map', 'content marketing', 'seo', 'llm', 'search'].filter(k => hay.includes(k)).length;\n  it.priority_score = (it.score || 0) + (it.comments_count || 0) * 2 + hits * 5 + (it.platform === 'linkedin' ? 6 : 0);\n  deduped.push(it);\n}\ndeduped.sort((a, b) => b.priority_score - a.priority_score);\n\nfor (const b of Object.keys(diagnostics.branch_counts)) {\n  if (!diagnostics.branch_counts[b]) diagnostics.empty_branches.push(b);\n}\nfor (const it of deduped) {\n  const b = it.collection_branch;\n  diagnostics.sample_items_by_branch[b] = diagnostics.sample_items_by_branch[b] || [];\n  if (diagnostics.sample_items_by_branch[b].length < 3) diagnostics.sample_items_by_branch[b].push({ title: it.title, url: it.url });\n}\n\nconst selectedItems = deduped.slice(0, Number(config.max_storage_rows || 25));\n\nfunction fallbackRowFromItem(it) {\n  const excerpt = clean(it.text).slice(0, 700);\n  const headline = clean(it.title || excerpt.slice(0, 120));\n  const platformTone = it.platform === 'reddit'\n    ? 'This is a raw operator complaint or confusion signal, not a polished best practice.'\n    : (it.platform === 'linkedin'\n      ? 'This is a positioning claim from a public post, so separate conviction from evidence.'\n      : 'This is implementation-level friction, which usually points to repeatable product or content gaps.');\n  return {\n    date: new Date().toISOString().slice(0, 10),\n    run_started_at: started,\n    platform: it.platform,\n    collection_method: it.collection_method,\n    source_label: it.source_label,\n    community: it.community,\n    author: it.author,\n    title: headline,\n    url: it.url,\n    canonical_key: it.url || [it.platform, it.title, it.author].join('|'),\n    published_at: it.published_at,\n    summary: excerpt.slice(0, 500),\n    counterpoint: platformTone,\n    operator_take: 'Pull out the exact claim in this thread, compare it against live SERP behavior or workflow evidence, then decide whether it deserves a post, video, or product experiment.',\n    hidden_assumption: 'The author assumes their example scales beyond the exact context shown in the post.',\n    proof_gap: 'Missing: a concrete before/after example, a narrow test setup, or evidence tied to one audience and page type.',\n    curiosity: 'What is the sharpest non-obvious question hiding inside this discussion?',\n    research_angle: 'Turn the claim into a small proof-oriented teardown instead of another opinion post.',\n    content_hook: headline,\n    video_angle: 'Use the original claim as the opening, then test where it breaks in real SEO or content operations.',\n    debate_angle: 'Frame the disagreement clearly: what one camp believes, what the other side misses, and what evidence would settle it.',\n    linkedin_post_angle: 'Write this as a founder point of view rooted in one concrete claim from the source, then challenge it with evidence or a live example.',\n    x_thread_angle: 'Open with the sharpest claim in the discussion, then unpack the failure mode, the counterexample, and the test worth running.',\n    youtube_hook: 'Start with the argument people keep repeating, then show where the real implementation or measurement problem begins.',\n    creator_notes: 'Use the strongest quote, objection, or implementation detail as the creative anchor rather than summarizing the whole thread.',\n    evidence_to_collect: 'Collect screenshots, before/after examples, SERP patterns, workflow steps, or conversion evidence that can either support or kill the claim.',\n    argument_map: 'Claim -> objection -> hidden assumption -> proof needed -> creator angle.',\n    hashtags: (it.hashtags || []).join(', '),\n    hashtag_names: (it.hashtags || []).map(h => h.replace(/^#/, '')).filter(Boolean),\n    raw_text_excerpt: excerpt,\n    score: it.score,\n    comments_count: it.comments_count,\n    google_sheet_id: config.google_sheet_id,\n    google_sheet_tab: config.google_sheet_tab,\n    notion_database_id: config.notion_database_id\n  };\n}\n\nfunction promptSafeJsonParse(value) {\n  const raw = clean(value);\n  if (!raw) return null;\n  const candidates = [raw];\n  const fenced = raw.match(/```(?:json)?\\s*([\\s\\S]*?)```/i);\n  if (fenced && fenced[1]) candidates.push(clean(fenced[1]));\n  const firstBrace = raw.indexOf('{');\n  const lastBrace = raw.lastIndexOf('}');\n  if (firstBrace >= 0 && lastBrace > firstBrace) candidates.push(raw.slice(firstBrace, lastBrace + 1));\n  for (const candidate of candidates) {\n    try { return JSON.parse(candidate); } catch {}\n  }\n  return null;\n}\n\nfunction responseText(response) {\n  const content = response && response.choices && response.choices[0] && response.choices[0].message && response.choices[0].message.content;\n  if (Array.isArray(content)) return content.map(part => typeof part === 'string' ? part : (part && part.text) || '').join('').trim();\n  return clean(content || '');\n}\n\nfunction tokenize(text) {\n  return Array.from(new Set(clean(text).toLowerCase().match(/[a-z][a-z0-9+-]{2,}/g) || []));\n}\n\nfunction relatedItems(base, pool, limit) {\n  const baseTokens = new Set(tokenize([base.title, base.text, base.community, base.author].join(' ')));\n  return pool\n    .filter(candidate => candidate !== base)\n    .map(candidate => {\n      const tokens = tokenize([candidate.title, candidate.text, candidate.community, candidate.author].join(' '));\n      let overlap = 0;\n      for (const token of tokens) if (baseTokens.has(token)) overlap += 1;\n      let score = overlap;\n      if (candidate.platform === base.platform) score += 2;\n      if (candidate.community && candidate.community === base.community) score += 2;\n      return { candidate, score };\n    })\n    .filter(entry => entry.score > 0)\n    .sort((a, b) => b.score - a.score)\n    .slice(0, limit)\n    .map(entry => ({\n      platform: entry.candidate.platform,\n      title: entry.candidate.title,\n      community: entry.candidate.community,\n      author: entry.candidate.author,\n      score: entry.candidate.score,\n      comments_count: entry.candidate.comments_count,\n      text: clean(entry.candidate.text).slice(0, 320)\n    }));\n}\n\nasync function callOpenRouterJson(model, systemPrompt, userPrompt) {\n  const response = await httpRequest({\n    method: 'POST',\n    url: 'https://openrouter.ai/api/v1/chat/completions',\n    headers: {\n      Authorization: 'Bearer ' + $env.OPENROUTER_API_KEY,\n      'Content-Type': 'application/json',\n      'HTTP-Referer': 'https://contentmaps.ai',\n      'X-Title': 'ContentMaps Daily SEO Discussion Radar'\n    },\n    body: {\n      model,\n      temperature: Number(config.openrouter_temperature ?? 0.35),\n      top_p: Number(config.openrouter_top_p ?? 0.9),\n      reasoning: { effort: String(config.openrouter_reasoning_effort || 'high'), exclude: true },\n      response_format: { type: 'json_object' },\n      messages: [\n        { role: 'system', content: systemPrompt },\n        { role: 'user', content: userPrompt }\n      ]\n    },\n    json: true\n  });\n  const parsed = promptSafeJsonParse(responseText(response));\n  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Model returned invalid JSON object.');\n  return parsed;\n}\n\nfunction canHydrateWithFirecrawl(row) {\n  if (!row.url || !$env.FIRECRAWL_API_KEY) return false;\n  if (String(row.raw_text_excerpt || '').length >= Number(config.firecrawl_hydration_min_chars || 450)) return false;\n  if (row.platform === 'linkedin' && !/(\\/posts\\/|\\/feed\\/update\\/|\\/pulse\\/)/i.test(row.url)) return false;\n  if (/\\/recent-activity\\//i.test(row.url)) return false;\n  return true;\n}\n\nlet firecrawlHydrationAttempts = 0;\n\nasync function maybeHydrateWithFirecrawl(row) {\n  if (firecrawlHydrationAttempts >= Number(config.firecrawl_hydration_limit || 6)) return row;\n  if (!canHydrateWithFirecrawl(row)) return row;\n  firecrawlHydrationAttempts += 1;\n  try {\n    const response = await httpRequest({\n      method: 'POST',\n      url: config.firecrawl_base_url + '/v2/scrape',\n      headers: {\n        Authorization: 'Bearer ' + $env.FIRECRAWL_API_KEY,\n        'Content-Type': 'application/json'\n      },\n      body: {\n        url: row.url,\n        formats: ['markdown'],\n        onlyMainContent: true,\n        waitFor: 1500,\n        timeout: 20000,\n        storeInCache: false\n      },\n      json: true\n    });\n    const markdown = clean(response && response.data && response.data.markdown || response && response.markdown || '');\n    if (markdown && !junk(markdown)) {\n      return {\n        ...row,\n        raw_text_excerpt: markdown.slice(0, 700),\n        source_text_for_ai: markdown.slice(0, 2200),\n        content_hydrated_by: 'firecrawl'\n      };\n    }\n    diag('warning', 'firecrawl_hydration', 'Firecrawl scrape returned unusable content for one row.', { title: row.title, url: row.url });\n  } catch (e) {\n    diag('warning', 'firecrawl_hydration', 'Firecrawl scrape failed for one row.', { title: row.title, url: row.url, error: e.message });\n  }\n  return row;\n}\n\nasync function enrichBatch(batchRows) {\n  const hydratedRows = [];\n  for (const row of batchRows) hydratedRows.push(await maybeHydrateWithFirecrawl(row));\n  const systemPrompt = [\n    'You are an elite SEO, content, and AI-search strategist helping ContentMaps.ai build better YouTube videos, founder-led LinkedIn posts, and sharp X threads.',\n    'Write like smart operators arguing in a private Reddit thread: concrete, skeptical, a little sharp, and anchored to details from the supplied posts.',\n    'Do not collapse everything into the same template. Each item must feel like it came from its own claim, objection, or implementation problem.',\n    'Never use these phrases or close variants: \"source-level validation\", \"discussion seed\", \"primary discovery surface\", \"what changes if\", \"walk through the claim\", \"sounds obvious until\".',\n    'If a post is weak, call it weak and explain why.',\n    'Return valid JSON only.'\n  ].join(nl);\n  const userPrompt = [\n    'Analyze this batch of up to 3 discussion items together so you can see the argument, tension, and repeated blind spots across them.',\n    '',\n    'Return strict JSON with this shape:',\n    JSON.stringify({\n      batch_takeaway: '1-2 sentence synthesis of the main argument in the batch',\n      creator_priority: 'What to create first and why',\n      items: [\n        {\n          canonical_key: 'must exactly match input canonical_key',\n          summary: '2-3 sentence synthesis of the actual claim or tension',\n          counterpoint: 'specific challenge or why the claim may be overstated',\n          operator_take: 'what the founder/operator should do next',\n          hidden_assumption: 'unproven assumption',\n          proof_gap: 'exact missing evidence',\n          curiosity: 'non-obvious question worth exploring',\n          research_angle: 'teardown, experiment, or essay angle',\n          content_hook: 'specific hook for LinkedIn or X',\n          video_angle: 'specific YouTube angle with audience + demonstration plan',\n          debate_angle: 'how to frame the disagreement',\n          linkedin_post_angle: 'best LinkedIn post framing',\n          x_thread_angle: 'best X thread framing',\n          youtube_hook: 'opening hook for the video',\n          creator_notes: 'notes for writing or recording',\n          evidence_to_collect: 'proof assets to gather',\n          argument_map: 'claim -> objection -> proof path',\n          signal_label: 'signal|mixed|noise',\n          why_now: 'why this matters now',\n          interesting_points: ['3 concise bullet-like points']\n        }\n      ]\n    }, null, 2),\n    '',\n    'Rules:',\n    '- Treat Reddit as pain, objections, and implementation honesty.',\n    '- Treat LinkedIn as positioning, hot takes, and self-branding; separate conviction from proof.',\n    '- Treat Stack Exchange as practical implementation friction.',\n    '- content_hook, linkedin_post_angle, x_thread_angle, and youtube_hook must all be different from each other.',\n    '- video_angle must name the audience, the proof or demo, and the payoff.',\n    '- creator_notes should help someone write or record fast, not summarize.',\n    '- evidence_to_collect should list the exact screenshots, examples, metrics, or experiments needed.',\n    '- If one item is mostly noise, mark it and say what part is still salvageable.',\n    '',\n    'Bad example hook: \"The SEO advice sounds obvious until you ask what proof would change your mind.\"',\n    'Good example hook: \"Everyone says AI Overviews kill clicks, but almost nobody breaks out which page types lose demand and which ones quietly gain assisted conversions.\"',\n    '',\n    'Batch items JSON:',\n    JSON.stringify(hydratedRows.map(row => ({\n      canonical_key: row.canonical_key,\n      platform: row.platform,\n      community: row.community,\n      source_label: row.source_label,\n      author: row.author,\n      title: row.title,\n      url: row.url,\n      published_at: row.published_at,\n      score: row.score,\n      comments_count: row.comments_count,\n      related_context: row.related_context || [],\n      content_hydrated_by: row.content_hydrated_by || '',\n      text: clean(row.source_text_for_ai || row.raw_text_excerpt || '').slice(0, 2200)\n    })))\n  ].join(nl);\n\n  const models = [\n    config.openrouter_model || 'deepseek/deepseek-v4-pro',\n    config.openrouter_fallback_model || 'openai/gpt-oss-120b'\n  ];\n  let lastError = '';\n  for (const model of models) {\n    try {\n      const enriched = await callOpenRouterJson(model, systemPrompt, userPrompt);\n      if (!Array.isArray(enriched.items)) throw new Error('Batch JSON did not include an items array.');\n      return { ok: true, model, batch_takeaway: clean(enriched.batch_takeaway || ''), creator_priority: clean(enriched.creator_priority || ''), items: enriched.items };\n    } catch (e) {\n      lastError = e.message;\n    }\n  }\n  return { ok: false, error: lastError || 'Unknown OpenRouter batch enrichment failure.' };\n}\n\nasync function enrichAllRows(baseRows) {\n  const hydratedRows = [];\n  for (const row of baseRows) hydratedRows.push(await maybeHydrateWithFirecrawl(row));\n  const systemPrompt = [\n    'You are an elite SEO, content, and AI-search strategist helping ContentMaps.ai build better YouTube videos, founder-led LinkedIn posts, and sharp X threads.',\n    'Write like smart operators arguing in a private Reddit thread: concrete, skeptical, a little sharp, and anchored to details from the supplied posts.',\n    'Do not collapse everything into the same template. Each item must feel like it came from its own claim, objection, or implementation problem.',\n    'Return valid JSON only.'\n  ].join(nl);\n  const userPrompt = [\n    'Analyze the full discussion set in one pass. Use the cross-post context to sharpen the output for each item.',\n    '',\n    'Return strict JSON with this shape:',\n    JSON.stringify({\n      overall_digest_markdown: 'markdown digest with tensions, proof gaps, experiments, product ideas, and creator opportunities',\n      creator_priority: 'What to create first and why',\n      items: [\n        {\n          canonical_key: 'must exactly match input canonical_key',\n          summary: '2-3 sentence synthesis of the actual claim or tension',\n          counterpoint: 'specific challenge or why the claim may be overstated',\n          operator_take: 'what the founder/operator should do next',\n          hidden_assumption: 'unproven assumption',\n          proof_gap: 'exact missing evidence',\n          curiosity: 'non-obvious question worth exploring',\n          research_angle: 'teardown, experiment, or essay angle',\n          content_hook: 'specific hook for LinkedIn or X',\n          video_angle: 'specific YouTube angle with audience + demonstration plan',\n          debate_angle: 'how to frame the disagreement',\n          linkedin_post_angle: 'best LinkedIn post framing',\n          x_thread_angle: 'best X thread framing',\n          youtube_hook: 'opening hook for the video',\n          creator_notes: 'notes for writing or recording',\n          evidence_to_collect: 'proof assets to gather',\n          argument_map: 'claim -> objection -> proof path',\n          signal_label: 'signal|mixed|noise',\n          why_now: 'why this matters now',\n          interesting_points: ['3 concise bullet-like points']\n        }\n      ]\n    }, null, 2),\n    '',\n    'Rules:',\n    '- Treat Reddit as pain, objections, and implementation honesty.',\n    '- Treat LinkedIn as positioning, hot takes, and self-branding; separate conviction from proof.',\n    '- Treat Stack Exchange as practical implementation friction.',\n    '- content_hook, linkedin_post_angle, x_thread_angle, and youtube_hook must all be different from each other.',\n    '- video_angle must name the audience, the proof or demo, and the payoff.',\n    '- creator_notes should help someone write or record fast, not summarize.',\n    '- evidence_to_collect should list the exact screenshots, examples, metrics, or experiments needed.',\n    '',\n    'Items JSON:',\n    JSON.stringify(hydratedRows.map(row => ({\n      canonical_key: row.canonical_key,\n      platform: row.platform,\n      community: row.community,\n      source_label: row.source_label,\n      author: row.author,\n      title: row.title,\n      url: row.url,\n      published_at: row.published_at,\n      score: row.score,\n      comments_count: row.comments_count,\n      related_context: row.related_context || [],\n      content_hydrated_by: row.content_hydrated_by || '',\n      text: clean(row.source_text_for_ai || row.raw_text_excerpt || '').slice(0, 2200)\n    })))\n  ].join(nl);\n\n  const models = [\n    config.openrouter_model || 'deepseek/deepseek-v4-pro',\n    config.openrouter_fallback_model || 'openai/gpt-oss-120b'\n  ];\n  let lastError = '';\n  for (const model of models) {\n    try {\n      const enriched = await callOpenRouterJson(model, systemPrompt, userPrompt);\n      if (!Array.isArray(enriched.items)) throw new Error('Set-level JSON did not include an items array.');\n      return {\n        ok: true,\n        model,\n        creator_priority: clean(enriched.creator_priority || ''),\n        overall_digest_markdown: clean(enriched.overall_digest_markdown || ''),\n        items: enriched.items\n      };\n    } catch (e) {\n      lastError = e.message;\n    }\n  }\n  return { ok: false, error: lastError || 'Unknown OpenRouter set enrichment failure.' };\n}\n\nasync function buildDigest(rows, modelsUsed) {\n  const systemPrompt = [\n    'You are an elite SEO research lead writing a founder digest for ContentMaps.ai.',\n    'Your job is to sound like an informed operator, not a content intern.',\n    'Prefer tensions, disagreements, proof gaps, experiments, and product opportunities over summary.',\n    'Return markdown only.'\n  ].join(nl);\n  const userPrompt = [\n    'Build a daily digest from enriched discussion rows.',\n    'Cover:',\n    '- what people are arguing about',\n    '- what actually changed',\n    '- contrarian takes worth testing',\n    '- proof gaps',\n    '- YouTube ideas',\n    '- LinkedIn/X post angles',\n    '- experiments to run',\n    '- features or workflows ContentMaps.ai should consider building',\n    '- what is noise',\n    '',\n    'Use short sections and sharp bullets. Avoid repeating the same framing across items.',\n    '',\n    'Rows JSON:',\n    JSON.stringify(rows.slice(0, 15).map(row => ({\n      platform: row.platform,\n      community: row.community,\n      title: row.title,\n      author: row.author,\n      score: row.score,\n      comments_count: row.comments_count,\n      summary: row.summary,\n      counterpoint: row.counterpoint,\n      operator_take: row.operator_take,\n      proof_gap: row.proof_gap,\n      content_hook: row.content_hook,\n      video_angle: row.video_angle,\n      research_angle: row.research_angle,\n      debate_angle: row.debate_angle,\n      linkedin_post_angle: row.linkedin_post_angle,\n      x_thread_angle: row.x_thread_angle,\n      youtube_hook: row.youtube_hook,\n      creator_notes: row.creator_notes,\n      evidence_to_collect: row.evidence_to_collect,\n      argument_map: row.argument_map\n    }))),\n    '',\n    'Model usage:',\n    JSON.stringify(modelsUsed)\n  ].join(nl);\n  const models = [\n    config.openrouter_model || 'deepseek/deepseek-v4-pro',\n    config.openrouter_fallback_model || 'openai/gpt-oss-120b'\n  ];\n  let lastError = '';\n  for (const model of models) {\n    try {\n      const response = await httpRequest({\n        method: 'POST',\n        url: 'https://openrouter.ai/api/v1/chat/completions',\n        headers: {\n          Authorization: 'Bearer ' + $env.OPENROUTER_API_KEY,\n          'Content-Type': 'application/json',\n          'HTTP-Referer': 'https://contentmaps.ai',\n          'X-Title': 'ContentMaps Daily SEO Discussion Radar'\n        },\n        body: {\n          model,\n          temperature: Number(config.openrouter_temperature ?? 0.35),\n          top_p: Number(config.openrouter_top_p ?? 0.9),\n          reasoning: { effort: String(config.openrouter_reasoning_effort || 'high'), exclude: true },\n          messages: [\n            { role: 'system', content: systemPrompt },\n            { role: 'user', content: userPrompt }\n          ]\n        },\n        json: true\n      });\n      const text = responseText(response);\n      if (text) return { ok: true, text, model };\n      lastError = 'Digest response was empty.';\n    } catch (e) {\n      lastError = e.message;\n    }\n  }\n  return { ok: false, error: lastError || 'Unknown digest failure.' };\n}\n\nconst rows = [];\nconst modelsUsed = {};\nlet openrouter_status = 'skipped';\nlet aiDigest = '';\nif (selectedItems.length && $env.OPENROUTER_API_KEY) {\n  openrouter_status = 'ok';\n  const baseRows = selectedItems.map(item => ({\n    ...fallbackRowFromItem(item),\n    source_text_for_ai: clean(item.text).slice(0, 2200),\n    related_context: relatedItems(item, deduped, 2)\n  }));\n  const enrichment = await enrichAllRows(baseRows);\n  if (enrichment.ok) {\n    const enrichedByKey = {};\n    for (const entry of enrichment.items) {\n      const key = clean(entry.canonical_key || '');\n      if (key) enrichedByKey[key] = entry;\n    }\n    for (const baseRow of baseRows) {\n      const enriched = enrichedByKey[baseRow.canonical_key] || {};\n      const row = {\n        ...baseRow,\n        summary: clean([\n          enriched.summary || baseRow.summary,\n          Array.isArray(enriched.interesting_points) && enriched.interesting_points.length\n            ? 'Interesting points: ' + enriched.interesting_points.map(v => clean(v)).filter(Boolean).slice(0, 3).join(' | ')\n            : ''\n        ].filter(Boolean).join(' ')).slice(0, 500),\n        counterpoint: clean(enriched.counterpoint || baseRow.counterpoint).slice(0, 500),\n        operator_take: clean([\n          enriched.operator_take || baseRow.operator_take,\n          enriched.why_now ? 'Why now: ' + enriched.why_now : '',\n          enrichment.creator_priority ? 'Priority: ' + enrichment.creator_priority : ''\n        ].filter(Boolean).join(' ')).slice(0, 500),\n        hidden_assumption: clean(enriched.hidden_assumption || baseRow.hidden_assumption).slice(0, 500),\n        proof_gap: clean(enriched.proof_gap || baseRow.proof_gap).slice(0, 500),\n        curiosity: clean(enriched.curiosity || baseRow.curiosity).slice(0, 500),\n        research_angle: clean(enriched.research_angle || baseRow.research_angle).slice(0, 500),\n        content_hook: clean(enriched.content_hook || baseRow.content_hook).slice(0, 500),\n        video_angle: clean(enriched.video_angle || baseRow.video_angle).slice(0, 500),\n        debate_angle: clean(enriched.debate_angle || baseRow.debate_angle).slice(0, 500),\n        linkedin_post_angle: clean(enriched.linkedin_post_angle || baseRow.linkedin_post_angle).slice(0, 500),\n        x_thread_angle: clean(enriched.x_thread_angle || baseRow.x_thread_angle).slice(0, 500),\n        youtube_hook: clean(enriched.youtube_hook || baseRow.youtube_hook).slice(0, 500),\n        creator_notes: clean(enriched.creator_notes || baseRow.creator_notes).slice(0, 500),\n        evidence_to_collect: clean(enriched.evidence_to_collect || baseRow.evidence_to_collect).slice(0, 500),\n        argument_map: clean(enriched.argument_map || baseRow.argument_map).slice(0, 500),\n        signal_label: clean(enriched.signal_label || ''),\n        ai_model: enrichment.model\n      };\n      rows.push(row);\n    }\n    modelsUsed[enrichment.model] = (modelsUsed[enrichment.model] || 0) + 1;\n    aiDigest = enrichment.overall_digest_markdown || '';\n  } else {\n    for (const baseRow of baseRows) rows.push(baseRow);\n    openrouter_status = 'partial_fallback';\n    diag('warning', 'openrouter', 'Set-level enrichment failed; stored source-backed fallback copy.', { error: enrichment.error });\n  }\n} else if (!selectedItems.length) {\n  diag('warning', 'openrouter', 'OpenRouter skipped because there were zero real items.');\n} else {\n  diag('error', 'openrouter', 'OPENROUTER_API_KEY is not available in the n8n Code node environment.');\n}\nif (openrouter_status === 'partial_fallback' && aiDigest) openrouter_status = 'ok_with_row_fallbacks';\n\nconst topRows = rows.slice(0, 5);\nconst fallbackInsights = topRows.map((r, i) => [\n  String(i + 1) + '. [' + r.platform + '] ' + r.title,\n  r.url,\n  'Hook: ' + r.content_hook,\n  'Debate angle: ' + r.debate_angle,\n  'LinkedIn angle: ' + r.linkedin_post_angle,\n  'X thread: ' + r.x_thread_angle,\n  'Operator take: ' + r.operator_take,\n  'Proof gap: ' + r.proof_gap,\n  'Video angle: ' + r.video_angle\n].join(nl)).join(nl + nl);\nconst diagLines = diagnostics.warnings.concat(diagnostics.errors).map(d => '- [' + d.branch + '] ' + d.message + (d.status ? ' status=' + d.status : '')).join(nl);\nconst digest = [\n  'Daily SEO Discussion Radar',\n  'Run started: ' + started,\n  'Total collected: ' + collected.length,\n  'Deduped real items: ' + deduped.length,\n  'Storage-ready rows: ' + rows.length,\n  'OpenRouter: ' + openrouter_status,\n  'Model usage: ' + JSON.stringify(modelsUsed),\n  '',\n  'Branch counts:',\n  JSON.stringify(diagnostics.branch_counts, null, 2),\n  '',\n  'AI Digest:',\n  aiDigest || fallbackInsights || 'No real discussion items were collected.',\n  '',\n  'Diagnostics:',\n  diagLines || 'No warnings or errors.'\n].join(nl);\n\nreturn [{\n  json: {\n    run_started_at: started,\n    has_real_items: rows.length > 0,\n    total_collected: collected.length,\n    total_deduped: deduped.length,\n    storage_rows: rows,\n    diagnostics,\n    normalized_sample: deduped.slice(0, 5),\n    digest_text: digest,\n    digest_email: config.digest_email,\n    digest_from_email: config.digest_from_email,\n    google_sheet_id: config.google_sheet_id,\n    google_sheet_tab: config.google_sheet_tab,\n    notion_database_id: config.notion_database_id\n  }\n}];\n"
+      },
+      "id": "441be964-d4b3-496f-8fdc-3091706ec9a1",
+      "name": "Normalize, Dedupe, Score, Digest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "real-items",
+              "leftValue": "={{ $json.has_real_items ? \"yes\" : \"\" }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3d507428-da8b-417c-b266-6495a952fe6e",
+      "name": "IF - Real Items Collected?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1328,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst summary = $input.first().json;\nconst rows = Array.isArray(summary.storage_rows) ? summary.storage_rows : [];\nconst diagnostics = summary.diagnostics || { errors: [], warnings: [] };\nconst httpRequest = this.helpers.httpRequest.bind(this.helpers);\nlet notionStored = 0;\nlet notionErrors = 0;\n\nfunction text(content) {\n  const value = String(content || '').trim();\n  return value ? [{ type: 'text', text: { content: value.slice(0, 1900) } }] : [];\n}\nfunction select(value) {\n  return value ? { name: String(value).slice(0, 100) } : null;\n}\nfunction dateValue(value) {\n  const raw = String(value || '').trim();\n  if (!raw) return null;\n  if (!/^\\d{4}-\\d{2}-\\d{2}/.test(raw)) return null;\n  const parsed = Date.parse(raw);\n  return Number.isFinite(parsed) ? { start: raw } : null;\n}\nfunction props(row) {\n  return {\n    Title: { title: text(row.title || 'Untitled radar item') },\n    'Canonical Key': { rich_text: text(row.canonical_key || row.url || row.title) },\n    'Source URL': { url: row.url || null },\n    'Collected Date': { date: dateValue(row.date) },\n    'Published At': { date: dateValue(row.published_at) },\n    Platform: { select: select(row.platform) },\n    'Collection Method': { select: select(row.collection_method) },\n    Community: { rich_text: text(row.community) },\n    Author: { rich_text: text(row.author) },\n    'Source Label': { rich_text: text(row.source_label) },\n    Summary: { rich_text: text(row.summary) },\n    Counterpoint: { rich_text: text(row.counterpoint) },\n    'Operator Take': { rich_text: text(row.operator_take) },\n    'Hidden Assumption': { rich_text: text(row.hidden_assumption) },\n    'Proof Gap': { rich_text: text(row.proof_gap) },\n    Curiosity: { rich_text: text(row.curiosity) },\n    'Research Angle': { rich_text: text(row.research_angle) },\n    'Debate Angle': { rich_text: text(row.debate_angle) },\n    'LinkedIn Post Angle': { rich_text: text(row.linkedin_post_angle) },\n    'X Thread Angle': { rich_text: text(row.x_thread_angle) },\n    'YouTube Hook': { rich_text: text(row.youtube_hook) },\n    'Creator Notes': { rich_text: text(row.creator_notes) },\n    'Evidence To Collect': { rich_text: text(row.evidence_to_collect) },\n    'Argument Map': { rich_text: text(row.argument_map) },\n    'Signal Label': { rich_text: text(row.signal_label) },\n    'Content Hook': { rich_text: text(row.content_hook) },\n    'Video Angle': { rich_text: text(row.video_angle) },\n    'Content Hydrated By': { rich_text: text(row.content_hydrated_by) },\n    Hashtags: { multi_select: (row.hashtag_names || []).slice(0, 25).map(name => ({ name: String(name).slice(0, 100) })) },\n    'Raw Text Excerpt': { rich_text: text(row.raw_text_excerpt) },\n    'Reddit Score': { number: Number(row.score || 0) },\n    'Comments Count': { number: Number(row.comments_count || 0) },\n    'Run Started At': { date: dateValue(row.run_started_at) }\n  };\n}\n\nif (!rows.length) {\n  summary.notion_stored_count = 0;\n  return [{ json: summary }];\n}\nif (!$env.NOTION_API_KEY) {\n  diagnostics.errors = diagnostics.errors || [];\n  diagnostics.errors.push({ branch: 'notion', message: 'NOTION_API_KEY is not available in the n8n Code node environment.' });\n  summary.notion_stored_count = 0;\n  summary.notion_error_count = rows.length;\n  return [{ json: summary }];\n}\n\nasync function notion(method, url, body) {\n  return await httpRequest({\n    method,\n    url,\n    headers: { Authorization: 'Bearer ' + $env.NOTION_API_KEY, 'Notion-Version': '2022-06-28', 'Content-Type': 'application/json' },\n    body,\n    json: true\n  });\n}\n\nfor (const row of rows) {\n  try {\n    const query = await notion('POST', 'https://api.notion.com/v1/databases/' + encodeURIComponent(row.notion_database_id) + '/query', { filter: { property: 'Canonical Key', rich_text: { equals: row.canonical_key } }, page_size: 1 });\n    const existing = Array.isArray(query.results) && query.results[0];\n    if (existing && existing.id) {\n      await notion('PATCH', 'https://api.notion.com/v1/pages/' + encodeURIComponent(existing.id), { properties: props(row) });\n    } else {\n      await notion('POST', 'https://api.notion.com/v1/pages', { parent: { database_id: row.notion_database_id }, properties: props(row) });\n    }\n    notionStored += 1;\n  } catch (e) {\n    notionErrors += 1;\n    diagnostics.errors = diagnostics.errors || [];\n    diagnostics.errors.push({ branch: 'notion', message: 'Notion upsert failed for one row.', title: row.title, error: e.message });\n  }\n}\nsummary.diagnostics = diagnostics;\nsummary.notion_stored_count = notionStored;\nsummary.notion_error_count = notionErrors;\nsummary.digest_text = summary.digest_text + '\\n\\nStorage:\\n- Notion upserted: ' + notionStored + '\\n- Notion errors: ' + notionErrors + '\\n- Google Sheets rows queued: ' + rows.length;\nreturn [{ json: summary }];\n"
+      },
+      "id": "6cd43b3b-153a-44db-8abf-be8486415b93",
+      "name": "Notion - Upsert Discussion Pages",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1584,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst rows = Array.isArray($input.first().json.storage_rows) ? $input.first().json.storage_rows : [];\nreturn rows.map(row => ({ json: row }));\n"
+      },
+      "id": "dad6bc87-fb06-4c08-b9c3-66a83f305d50",
+      "name": "Build Google Sheets Rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.google_sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $json.google_sheet_tab }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $json.date }}",
+            "run_started_at": "={{ $json.run_started_at }}",
+            "platform": "={{ $json.platform }}",
+            "collection_method": "={{ $json.collection_method }}",
+            "source_label": "={{ $json.source_label }}",
+            "community": "={{ $json.community }}",
+            "author": "={{ $json.author }}",
+            "title": "={{ $json.title }}",
+            "url": "={{ $json.url }}",
+            "canonical_key": "={{ $json.canonical_key }}",
+            "published_at": "={{ $json.published_at }}",
+            "summary": "={{ $json.summary }}",
+            "counterpoint": "={{ $json.counterpoint }}",
+            "operator_take": "={{ $json.operator_take }}",
+            "hidden_assumption": "={{ $json.hidden_assumption }}",
+            "proof_gap": "={{ $json.proof_gap }}",
+            "curiosity": "={{ $json.curiosity }}",
+            "research_angle": "={{ $json.research_angle }}",
+            "debate_angle": "={{ $json.debate_angle }}",
+            "linkedin_post_angle": "={{ $json.linkedin_post_angle }}",
+            "x_thread_angle": "={{ $json.x_thread_angle }}",
+            "youtube_hook": "={{ $json.youtube_hook }}",
+            "creator_notes": "={{ $json.creator_notes }}",
+            "evidence_to_collect": "={{ $json.evidence_to_collect }}",
+            "argument_map": "={{ $json.argument_map }}",
+            "signal_label": "={{ $json.signal_label }}",
+            "content_hook": "={{ $json.content_hook }}",
+            "video_angle": "={{ $json.video_angle }}",
+            "hashtags": "={{ $json.hashtags }}",
+            "hashtag_names": "={{ $json.hashtag_names }}",
+            "raw_text_excerpt": "={{ $json.raw_text_excerpt }}",
+            "content_hydrated_by": "={{ $json.content_hydrated_by }}",
+            "score": "={{ $json.score }}",
+            "comments_count": "={{ $json.comments_count }}",
+            "google_sheet_id": "={{ $json.google_sheet_id }}",
+            "google_sheet_tab": "={{ $json.google_sheet_tab }}",
+            "notion_database_id": "={{ $json.notion_database_id }}"
+          },
+          "matchingColumns": [
+            "canonical_key"
+          ],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "run_started_at",
+              "displayName": "run_started_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "platform",
+              "displayName": "platform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "collection_method",
+              "displayName": "collection_method",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source_label",
+              "displayName": "source_label",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "community",
+              "displayName": "community",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "author",
+              "displayName": "author",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "canonical_key",
+              "displayName": "canonical_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "published_at",
+              "displayName": "published_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "counterpoint",
+              "displayName": "counterpoint",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "operator_take",
+              "displayName": "operator_take",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "hidden_assumption",
+              "displayName": "hidden_assumption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "proof_gap",
+              "displayName": "proof_gap",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "curiosity",
+              "displayName": "curiosity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "research_angle",
+              "displayName": "research_angle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "debate_angle",
+              "displayName": "debate_angle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "linkedin_post_angle",
+              "displayName": "linkedin_post_angle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "x_thread_angle",
+              "displayName": "x_thread_angle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_hook",
+              "displayName": "youtube_hook",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "creator_notes",
+              "displayName": "creator_notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "evidence_to_collect",
+              "displayName": "evidence_to_collect",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "argument_map",
+              "displayName": "argument_map",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "signal_label",
+              "displayName": "signal_label",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "content_hook",
+              "displayName": "content_hook",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "video_angle",
+              "displayName": "video_angle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "hashtags",
+              "displayName": "hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "hashtag_names",
+              "displayName": "hashtag_names",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "raw_text_excerpt",
+              "displayName": "raw_text_excerpt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "content_hydrated_by",
+              "displayName": "content_hydrated_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "score",
+              "displayName": "score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "comments_count",
+              "displayName": "comments_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "google_sheet_id",
+              "displayName": "google_sheet_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "google_sheet_tab",
+              "displayName": "google_sheet_tab",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notion_database_id",
+              "displayName": "notion_database_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "useAppend": true
+        }
+      },
+      "id": "725f69e0-4843-4152-a718-5ccc4432f9ef",
+      "name": "Google Sheets - Append or Update Discussion Row",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2112,
+        256
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nlet summary = $input.first().json || {};\ntry {\n  const notionSummary = $('Notion - Upsert Discussion Pages').first().json;\n  if (notionSummary && notionSummary.digest_text) summary = notionSummary;\n} catch (e) {}\n\nconst rows = Array.isArray(summary.storage_rows) ? summary.storage_rows : [];\nconst diagnostics = summary.diagnostics || { errors: [], warnings: [] };\nconst httpRequest = this.helpers.httpRequest.bind(this.helpers);\nconst tasksDatabaseId = 'YOUR_TASKS_DATABASE_ID';\n\nfunction text(content) {\n  const value = String(content || '').trim();\n  return value ? [{ type: 'text', text: { content: value.slice(0, 1900) } }] : [];\n}\nfunction select(value) {\n  return value ? { name: String(value).slice(0, 100) } : null;\n}\nfunction multiSelect(values) {\n  return Array.isArray(values) ? values.filter(Boolean).slice(0, 10).map(value => ({ name: String(value).slice(0, 100) })) : [];\n}\nfunction dateValue(value) {\n  const raw = String(value || '').trim();\n  if (!raw) return null;\n  if (!/^\\\\d{4}-\\\\d{2}-\\\\d{2}/.test(raw)) return null;\n  const parsed = Date.parse(raw);\n  return Number.isFinite(parsed) ? { start: raw.slice(0, 10) } : null;\n}\nfunction clip(value, limit) {\n  return String(value || '').replace(/\\\\s+/g, ' ').trim().slice(0, limit);\n}\n\nif (!rows.length) {\n  summary.founder_task_created = false;\n  return [{ json: summary }];\n}\nif (!$env.NOTION_API_KEY) {\n  diagnostics.errors = diagnostics.errors || [];\n  diagnostics.errors.push({ branch: 'notion_tasks', message: 'NOTION_API_KEY is not available in the n8n Code node environment.' });\n  summary.diagnostics = diagnostics;\n  summary.founder_task_created = false;\n  return [{ json: summary }];\n}\n\nasync function notion(method, url, body) {\n  return await httpRequest({\n    method,\n    url,\n    headers: { Authorization: 'Bearer ' + $env.NOTION_API_KEY, 'Notion-Version': '2022-06-28', 'Content-Type': 'application/json' },\n    body,\n    json: true\n  });\n}\n\nconst runDate = String(summary.run_started_at || new Date().toISOString()).slice(0, 10);\nconst taskName = 'Review SEO radar insights - ' + runDate;\nconst topRows = rows.slice(0, 5);\nconst insightLines = topRows.map((row, index) => {\n  const parts = [\n    (index + 1) + '. ' + clip(row.title || row.source_label || 'Untitled', 110),\n    '[' + clip(row.platform || 'unknown', 20) + ']',\n    clip(row.content_hook || row.summary || row.debate_angle || '', 180)\n  ].filter(Boolean);\n  return parts.join(' ');\n});\nconst recommendationLines = topRows.map((row, index) => {\n  const parts = [\n    '- Read #' + (index + 1),\n    clip(row.url || '', 220),\n    clip(row.evidence_to_collect || row.creator_notes || '', 160)\n  ].filter(Boolean);\n  return parts.join(' | ');\n});\nconst emptyBranches = Array.isArray(diagnostics.empty_branches) ? diagnostics.empty_branches : [];\nconst branchCounts = diagnostics.branch_counts || {};\nconst description = [\n  'Daily SEO radar finished successfully.',\n  '',\n  'Why this is worth checking:',\n  ...insightLines,\n  '',\n  'Recommended follow-up:',\n  ...recommendationLines,\n  '',\n  'Branch counts: ' + Object.entries(branchCounts).map(([key, value]) => key + '=' + value).join(', '),\n  emptyBranches.length ? 'Empty branches: ' + emptyBranches.join(', ') : 'Empty branches: none',\n  '',\n  'Open the latest rows in content ideas and turn one of the top signals into a founder post, thread, or video outline today.'\n].join('\\\\n').slice(0, 1900);\n\nconst properties = {\n  'Task name': { title: text(taskName) },\n  Description: { rich_text: text(description) },\n  Status: { status: select('today') },\n  Priority: { select: select(topRows.length >= 3 ? 'High' : 'Medium') },\n  'Effort level': { select: select('Small') },\n  'Task type': { multi_select: multiSelect(['Marketing', 'Engineering']) },\n  'Due date': { date: dateValue(runDate) }\n};\n\nlet taskCreated = false;\ntry {\n  const query = await notion('POST', 'https://api.notion.com/v1/databases/' + encodeURIComponent(tasksDatabaseId) + '/query', {\n    filter: {\n      property: 'Task name',\n      title: { equals: taskName }\n    },\n    page_size: 1\n  });\n  const existing = Array.isArray(query.results) && query.results[0];\n  if (existing && existing.id) {\n    await notion('PATCH', 'https://api.notion.com/v1/pages/' + encodeURIComponent(existing.id), { properties });\n  } else {\n    await notion('POST', 'https://api.notion.com/v1/pages', { parent: { database_id: tasksDatabaseId }, properties });\n  }\n  taskCreated = true;\n} catch (e) {\n  diagnostics.errors = diagnostics.errors || [];\n  diagnostics.errors.push({ branch: 'notion_tasks', message: 'Founder follow-up task sync failed.', error: e.message });\n}\n\nsummary.diagnostics = diagnostics;\nsummary.founder_task_created = taskCreated;\nsummary.digest_text = String(summary.digest_text || 'Daily SEO Discussion Radar') + '\\\\n- Founder follow-up task synced: ' + (taskCreated ? 'yes' : 'no');\nreturn [{ json: summary }];\n"
+      },
+      "id": "32866d58-8a7f-48e6-83d2-59746e91e8d5",
+      "name": "Create Founder Follow-up Task",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2368,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nlet summary = $input.first().json;\ntry {\n  const founderTaskSummary = $('Create Founder Follow-up Task').first().json;\n  if (founderTaskSummary && founderTaskSummary.digest_text) summary = founderTaskSummary;\n} catch (e) {}\ntry {\n  const notionSummary = $('Notion - Upsert Discussion Pages').first().json;\n  if (notionSummary && notionSummary.digest_text) summary = notionSummary;\n} catch (e) {}\nreturn [{\n  json: {\n    digest_from_email: summary.digest_from_email || 'henedy@contentmaps.ai',\n    digest_email: summary.digest_email || 'abdulrahmanhenedy@gmail.com',\n    digest_text: summary.digest_text || 'No digest generated.'\n  }\n}];\n"
+      },
+      "id": "53680d7f-9c7f-407d-8f80-21a730620029",
+      "name": "Prepare Email Digest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2624,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nlet summary = $input.first().json;\ntry {\n  const founderTaskSummary = $('Create Founder Follow-up Task').first().json;\n  if (founderTaskSummary && founderTaskSummary.digest_text) summary = founderTaskSummary;\n} catch (e) {}\ntry {\n  const notionSummary = $('Notion - Upsert Discussion Pages').first().json;\n  if (notionSummary && notionSummary.digest_text) summary = notionSummary;\n} catch (e) {}\nreturn [{\n  json: {\n    digest_from_email: summary.digest_from_email || 'henedy@contentmaps.ai',\n    digest_email: summary.digest_email || 'abdulrahmanhenedy@gmail.com',\n    digest_text: summary.digest_text || 'No digest generated.'\n  }\n}];\n"
+      },
+      "id": "af07c635-ed8a-4e06-a9f5-ebc8dc73bfe0",
+      "name": "Prepare Empty-Run Email Digest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1584,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $json.digest_from_email }}",
+        "toEmail": "={{ $json.digest_email }}",
+        "subject": "Daily SEO Discussion Radar",
+        "emailFormat": "text",
+        "text": "={{ $json.digest_text }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "912a685c-eecc-4b32-8962-184487caea39",
+      "name": "Send Email - Daily SEO Discussion Digest",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2592,
+        656
+      ],
+      "webhookId": "12fcdad7-9ec3-4233-ac25-9b6fa81bfdf9",
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "activeVersion": {
+    "nodes": [
+      {
+        "parameters": {},
+        "id": "783e3fef-e974-4d6b-805f-51d71bdb7a39",
+        "name": "Manual Trigger - Test Start",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          160,
+          240
+        ]
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "triggerAtHour": 8
+              }
+            ]
+          }
+        },
+        "id": "28812ece-72f4-454c-9728-c65e7aac85cc",
+        "name": "Schedule Trigger - Daily",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          160,
+          464
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "\nconst config = {\n  firecrawl_base_url: 'https://crawl.contentmaps.ai',\n  searxng_base_url: 'https://search.contentmaps.ai',\n  apify_base_url: 'https://api.apify.com',\n  apify_linkedin_actor_id: 'supreme_coder/linkedin-post',\n  apify_reddit_actor_id: 'spry_wholemeal/reddit-scrape',\n  linkedin_recent_posts_per_source: 3,\n  linkedin_scrape_until_days: 3,\n  reddit_recent_posts_per_query: 5,\n  digest_email: 'abdulrahmanhenedy@gmail.com',\n  digest_from_email: 'henedy@contentmaps.ai',\n  google_sheet_id: '15SVVvd_IRFoIJM9fVV1EhiUm7ifvmIhIIgTadbzfyX8',\n  google_sheet_tab: 'main',\n  notion_database_id: '351b971dd0a880459aa1d578f15722cb',\n  openrouter_model: 'deepseek/deepseek-v4-pro',\n  openrouter_fallback_model: 'openai/gpt-oss-120b',\n  openrouter_reasoning_effort: 'high',\n  openrouter_temperature: 0.35,\n  openrouter_top_p: 0.9,\n  max_storage_rows: 12,\n  firecrawl_hydration_limit: 4,\n  firecrawl_hydration_min_chars: 450\n};\n\nconst linkedinUrls = [\n  'https://www.linkedin.com/in/daniel-foley-assertive/recent-activity/all/',\n  'https://www.linkedin.com/in/jakezward/recent-activity/all/',\n  'https://www.linkedin.com/in/lily-ray-44755615/recent-activity/all/',\n  'https://www.linkedin.com/in/randfishkin/recent-activity/all/',\n  'https://www.linkedin.com/in/samdunning/recent-activity/all/',\n  'https://www.linkedin.com/in/jamesbrockbank/recent-activity/all/',\n  'https://www.linkedin.com/in/ferenczkaszoni/recent-activity/all/',\n  'https://www.linkedin.com/in/thinkingslow/recent-activity/all/',\n  'https://www.linkedin.com/in/adamagent/recent-activity/all/',\n  'https://www.linkedin.com/in/victorkarpenko/recent-activity/all/',\n  'https://www.linkedin.com/in/irinamaltseva/recent-activity/all/',\n  'https://www.linkedin.com/in/dmytro-sokhach-b13aaa75/recent-activity/all/',\n  'https://www.linkedin.com/in/freddiechatt/recent-activity/all/',\n  'https://www.linkedin.com/in/peterrota/recent-activity/all/',\n  'https://www.linkedin.com/in/charlesfloate/recent-activity/all/',\n  'https://www.linkedin.com/in/carrie-rose-47b78878/recent-activity/all/',\n  'https://www.linkedin.com/in/james-dooley-1b1757139/recent-activity/all/',\n];\nconst redditSubreddits = ['AISEOInsider', 'AI_SEO_Community', 'SEO'];\nconst redditTerms = ['seo', 'ai SEO', 'AI SEO', 'Topical maps', 'content marketing'];\nconst stackTerms = ['seo', 'ai seo', 'marketing', 'content marketing', 'topical maps'];\nconst discoveryKeywords = ['seo', 'ai SEO', 'Semantic SEO', 'content marketing'];\n\nfunction enc(v) { return encodeURIComponent(String(v || '')); }\nfunction actor(id) {\n  return String(id || '').replace('spry_wholemeal/reddit-scrape', 'spry_wholemeal/reddit-scraper').split('/').join('~');\n}\nfunction item(json) { return { json: { ...json, config } }; }\n\nconst req = [];\nconst from14 = Math.floor((Date.now() - 14 * 86400 * 1000) / 1000);\nconst scrapeUntil = new Date(Date.now() - Number(config.linkedin_scrape_until_days || 3) * 86400 * 1000).toISOString().slice(0, 10);\n\nfor (const url of linkedinUrls) {\n  req.push(item({\n    kind: 'linkedin_firecrawl',\n    branch: 'linkedin_firecrawl',\n    source_url: url,\n    method: 'POST',\n    auth_env: 'FIRECRAWL_API_KEY',\n    url: config.firecrawl_base_url + '/v2/scrape',\n    body: { url, formats: ['markdown'], onlyMainContent: true, waitFor: 2500, timeout: 60000, storeInCache: false }\n  }));\n}\n\nreq.push(item({\n  kind: 'linkedin_apify',\n  branch: 'linkedin_apify',\n  method: 'POST',\n  auth_env: 'APIFY_API_TOKEN',\n  source_urls: linkedinUrls,\n  url: config.apify_base_url + '/v2/acts/' + actor(config.apify_linkedin_actor_id) + '/run-sync-get-dataset-items?timeout=240',\n  body: { urls: linkedinUrls, limitPerSource: Number(config.linkedin_recent_posts_per_source || 3), scrapeUntil, deepScrape: true, rawData: false }\n}));\n\nfor (const kw of discoveryKeywords) {\n  const q = 'site:linkedin.com ' + kw;\n  req.push(item({\n    kind: 'linkedin_discovery',\n    branch: 'linkedin_discovery',\n    query: q,\n    method: 'GET',\n    url: config.searxng_base_url + '/search?q=' + enc(q) + '&format=json&time_range=day'\n  }));\n}\n\nfor (const subreddit of redditSubreddits) {\n  req.push(item({\n    kind: 'reddit_apify',\n    branch: 'reddit_apify',\n    subreddit,\n    terms: redditTerms,\n    method: 'POST',\n    auth_env: 'APIFY_API_TOKEN',\n    url: config.apify_base_url + '/v2/acts/' + actor(config.apify_reddit_actor_id) + '/run-sync-get-dataset-items?timeout=240',\n    body: {\n      mode: 'search',\n      search: {\n        queries: redditTerms,\n        sort: 'new',\n        timeframe: 'week',\n        maxPostsPerQuery: Number(config.reddit_recent_posts_per_query || 5),\n        restrictToSubreddit: subreddit,\n        commentsMode: 'high_engagement',\n        commentsMaxTopLevel: 20,\n        commentsMaxDepth: 2,\n        commentsHighEngagementMinScore: 0,\n        commentsHighEngagementMinComments: 0,\n        commentsHighEngagementFilterPosts: false\n      },\n      includeRaw: false,\n      proxyConfiguration: { useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'] },\n      tag: subreddit + ' | daily seo radar'\n    }\n  }));\n}\n\nfor (const term of stackTerms) {\n  req.push(item({\n    kind: 'stackexchange',\n    branch: 'stackexchange',\n    site: 'webmasters',\n    term,\n    method: 'GET',\n    url: 'https://api.stackexchange.com/2.3/search?order=desc&sort=activity&site=webmasters&intitle=' + enc(term) + '&pagesize=8&fromdate=' + from14 + '&filter=withbody'\n  }));\n}\nreq.push(item({\n  kind: 'stackexchange',\n  branch: 'stackexchange',\n  site: 'webmasters',\n  term: 'seo fallback',\n  method: 'GET',\n  fallback: true,\n  url: 'https://api.stackexchange.com/2.3/search?order=desc&sort=votes&site=webmasters&intitle=seo&pagesize=5&filter=withbody'\n}));\n\nreturn req;\n"
+        },
+        "id": "038f0a3f-a864-4d7c-bf9c-27b5a3a0c796",
+        "name": "Build Source Requests",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          464,
+          352
+        ]
+      },
+      {
+        "parameters": {
+          "method": "={{ $json.method }}",
+          "url": "={{ $json.url }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "={{ $json.auth_env === \"APIFY_API_TOKEN\" ? \"Bearer \" + $env.APIFY_API_TOKEN : ($json.auth_env === \"FIRECRAWL_API_KEY\" ? \"Bearer \" + $env.FIRECRAWL_API_KEY : \"\") }}"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Accept",
+                "value": "application/json, text/plain, */*"
+              },
+              {
+                "name": "User-Agent",
+                "value": "Mozilla/5.0 n8n SEO radar"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.body || {} }}",
+          "options": {
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "neverError": true,
+                "responseFormat": "text",
+                "outputPropertyName": "body"
+              }
+            },
+            "timeout": 120000
+          }
+        },
+        "id": "ee730b68-c94d-43b4-8e53-4a2fc8e660f6",
+        "name": "Fetch Source Request",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          768,
+          352
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "\nconst reqs = $('Build Source Requests').all().map(i => i.json);\nconst started = new Date().toISOString();\nconst nl = String.fromCharCode(10);\nconst bs = String.fromCharCode(92);\nconst ws = new RegExp(bs + 's+', 'g');\nconst dateOnly = new RegExp('^' + bs + 'd{4}-' + bs + 'd{2}-' + bs + 'd{2}$', 'i');\nconst config = (reqs[0] && reqs[0].config) || {};\nconst httpRequest = this.helpers.httpRequest.bind(this.helpers);\nconst diagnostics = {\n  run_started_at: started,\n  branch_counts: { linkedin_firecrawl: 0, linkedin_apify: 0, linkedin_discovery: 0, reddit_apify: 0, stackexchange: 0 },\n  errors: [],\n  warnings: [],\n  empty_branches: [],\n  sample_items_by_branch: {}\n};\nconst collected = [];\n\nfunction parseBody(t) {\n  if (typeof t === 'object' && t !== null) return t;\n  try { return JSON.parse(String(t || '')); } catch { return { raw_body: String(t || '') }; }\n}\nfunction strip(v) {\n  return String(v || '').replace(/<[^>]+>/g, ' ').replace(/&quot;/g, '\"').replace(/&#39;/g, \"'\").replace(/&amp;/g, '&').replace(ws, ' ').trim();\n}\nfunction clean(v) { return String(v || '').replace(ws, ' ').trim(); }\nfunction at(obj, path) { return path.split('.').reduce((a, k) => (a && a[k] !== undefined ? a[k] : undefined), obj); }\nfunction firstString(obj, paths) {\n  for (const p of paths) {\n    const v = at(obj, p);\n    if (v !== undefined && v !== null && String(v).trim()) return String(v).trim();\n  }\n  return '';\n}\nfunction firstNumber(obj, paths) {\n  for (const p of paths) {\n    const n = Number(at(obj, p));\n    if (Number.isFinite(n)) return n;\n  }\n  return 0;\n}\nfunction hashtagsFrom(text) {\n  return Array.from(new Set((String(text || '').match(/#[A-Za-z0-9_]+/g) || []).map(t => t.toLowerCase())));\n}\nfunction junk(text) {\n  const value = clean(text);\n  const h = value.toLowerCase();\n  if (!value || dateOnly.test(value)) return true;\n  return ['join linkedin', 'sign up | linkedin', 'agree & join linkedin', 'email password (6+ characters)', 'skip to main content', 'too many requests'].some(p => h.includes(p));\n}\nfunction diag(level, branch, message, extra) {\n  const row = { branch, message, ...(extra || {}) };\n  diagnostics[level === 'error' ? 'errors' : 'warnings'].push(row);\n}\nfunction flatten(v) {\n  if (Array.isArray(v)) return v.flatMap(flatten);\n  if (v && typeof v === 'object') {\n    for (const k of ['items', 'data', 'results', 'datasetItems', 'dataset_items', 'posts', 'linkedin_posts']) {\n      if (Array.isArray(v[k])) return flatten(v[k]);\n    }\n    return [v];\n  }\n  return [];\n}\nfunction canonicalizeUrl(value) {\n  const input = String(value || '').trim().replace(/[)>\\]\\s'\".,;]+$/g, '');\n  if (!input) return '';\n  try {\n    const u = new URL(input.startsWith('/') ? 'https://www.reddit.com' + input : input);\n    for (const key of Array.from(u.searchParams.keys())) {\n      if (/^utm_|^trk$|trackingId|feedView|rcm/i.test(key)) u.searchParams.delete(key);\n    }\n    u.hash = '';\n    return u.toString().replace(/\\/$/, '');\n  } catch {\n    return input;\n  }\n}\nfunction add(item) {\n  const title = clean(item.title || '');\n  const text = clean(item.text || '');\n  const combined = [title, text].filter(Boolean).join(' ');\n  item.url = canonicalizeUrl(item.url);\n  if ((!item.url && !title) || junk(combined)) return false;\n  item.title = title || text.slice(0, 120);\n  item.text = text || title;\n  item.score = Number(item.score || 0);\n  item.comments_count = Number(item.comments_count || 0);\n  item.hashtags = Array.isArray(item.hashtags) ? item.hashtags : [];\n  item.raw = item.raw || {};\n  item.diagnostics = item.diagnostics || [];\n  collected.push(item);\n  diagnostics.branch_counts[item.collection_branch] += 1;\n  return true;\n}\nfunction commentsText(row) {\n  const pools = [row.comments, row.topComments, row.replies, row.commentTree].filter(Array.isArray);\n  const comments = [];\n  for (const pool of pools) {\n    for (const c of pool) {\n      const body = clean(c.body || c.text || c.comment || c.content || '');\n      if (body) comments.push(body);\n    }\n  }\n  return comments.slice(0, 5).join(' ');\n}\n\nfor (const [i, res] of $input.all().entries()) {\n  const req = reqs[(res.pairedItem && res.pairedItem.item) || i] || {};\n  const status = Number(res.json.statusCode || res.json.status || 0);\n  const body = parseBody(res.json.body !== undefined ? res.json.body : res.json);\n  if (status >= 400) diag(status >= 500 ? 'error' : 'warning', req.branch || 'unknown', 'HTTP request returned non-2xx status.', { status, source: req.source_url || req.query || req.subreddit || req.term || '' });\n\n  if (req.kind === 'linkedin_firecrawl') {\n    const md = body.data && body.data.markdown || body.markdown || body.raw_body || '';\n    if (junk(md)) diag('warning', 'linkedin_firecrawl', 'LinkedIn source page produced login/signup boilerplate or no markdown; Apify fallback used.', { url: req.source_url, status });\n    else diag('warning', 'linkedin_firecrawl', 'LinkedIn source page returned markdown, but source activity pages are discovery-only and were not stored as posts.', { url: req.source_url, chars: String(md).length });\n  }\n\n  if (req.kind === 'linkedin_discovery') {\n    const found = Array.isArray(body.results) ? body.results.filter(r => String(r.url || '').includes('linkedin.com')) : [];\n    diagnostics.branch_counts.linkedin_discovery += found.length;\n    if (!found.length) diag('warning', 'linkedin_discovery', 'SearXNG returned no LinkedIn JSON results or was rate-limited.', { query: req.query, status, body: String(body.raw_body || '').slice(0, 120) });\n  }\n\n  if (req.kind === 'linkedin_apify') {\n    const rows = flatten(body);\n    if (!rows.length || body.error) diag('warning', 'linkedin_apify', 'Apify LinkedIn fallback returned no usable rows or an error.', { status, error: body.error || body.message || '' });\n    for (const r of rows) {\n      const commentSignals = commentsText(r);\n      const text = clean(firstString(r, ['text', 'postText', 'post_text', 'content', 'commentary', 'description', 'caption']) + (commentSignals ? ' LinkedIn comment signals: ' + commentSignals : ''));\n      add({\n        platform: 'linkedin',\n        collection_branch: 'linkedin_apify',\n        collection_method: 'apify_linkedin_post',\n        source_label: firstString(r, ['inputUrl', 'sourceUrl', 'profileUrl', 'author.profileUrl']) || 'LinkedIn Apify fallback',\n        community: 'linkedin_post',\n        title: firstString(r, ['document.title', 'title', 'headline', 'author.name', 'authorName']) || text.slice(0, 120),\n        text,\n        url: firstString(r, ['url', 'postUrl', 'post_url', 'linkedinUrl', 'activityUrl', 'postLink']),\n        author: firstString(r, ['author.name', 'authorName', 'profileName', 'actor.name', 'companyName']),\n        published_at: firstString(r, ['publishedAt', 'published_at', 'postedAt', 'posted_at', 'createdAt', 'date', 'timeSincePosted']),\n        score: firstNumber(r, ['likesCount', 'likeCount', 'reactionsCount', 'totalReactionCount', 'stats.likes']),\n        comments_count: firstNumber(r, ['commentsCount', 'commentCount', 'numComments', 'stats.comments']),\n        hashtags: hashtagsFrom(text),\n        raw: r,\n        diagnostics: []\n      });\n    }\n  }\n\n  if (req.kind === 'reddit_apify') {\n    const rows = flatten(body);\n    if (!rows.length || body.error) diag('warning', 'reddit_apify', 'Apify Reddit actor returned no usable rows or an error.', { subreddit: req.subreddit, status, error: body.error || body.message || '' });\n    for (const r of rows) {\n      if (String(r.record_type || 'post') !== 'post') continue;\n      const ctext = commentsText(r);\n      const text = clean(firstString(r, ['text', 'body', 'selftext', 'content']) + (ctext ? ' Top Reddit comments: ' + ctext : ''));\n      add({\n        platform: 'reddit',\n        collection_branch: 'reddit_apify',\n        collection_method: 'apify_reddit_actor_spry_wholemeal',\n        source_label: Array.isArray(r.matched_search_queries) ? r.matched_search_queries.join(', ') : (req.terms || []).join(', '),\n        community: r.subreddit ? 'r/' + r.subreddit : 'r/' + req.subreddit,\n        title: r.title || '',\n        text,\n        url: r.permalink || r.url,\n        author: r.author || '',\n        published_at: r.created_utc_iso || r.createdAt || '',\n        score: r.score || 0,\n        comments_count: r.num_comments || r.commentCount || 0,\n        hashtags: [],\n        raw: { post_id: r.post_id, tag: r.tag },\n        diagnostics: []\n      });\n    }\n  }\n\n  if (req.kind === 'stackexchange') {\n    const rows = Array.isArray(body.items) ? body.items : [];\n    if (!rows.length) diag('warning', 'stackexchange', 'Stack Exchange query returned zero items.', { term: req.term, status });\n    for (const q of rows) {\n      add({\n        platform: 'stackexchange',\n        collection_branch: 'stackexchange',\n        collection_method: req.fallback ? 'stackexchange_api_fallback' : 'stackexchange_api_recent',\n        source_label: req.term,\n        community: req.site,\n        title: strip(q.title),\n        text: strip(q.body),\n        url: q.link,\n        author: q.owner && q.owner.display_name || '',\n        published_at: q.creation_date ? new Date(q.creation_date * 1000).toISOString() : '',\n        score: q.score || 0,\n        comments_count: q.answer_count || 0,\n        hashtags: (q.tags || []).map(t => '#' + t),\n        raw: { question_id: q.question_id },\n        diagnostics: []\n      });\n    }\n  }\n}\n\nconst seen = new Set();\nconst deduped = [];\nfor (const it of collected) {\n  const key = (it.url || [it.platform, it.title, it.author].join('|')).toLowerCase().replace(/[?#].*$/, '');\n  if (seen.has(key)) continue;\n  seen.add(key);\n  const hay = [it.title, it.text].join(' ').toLowerCase();\n  const hits = ['ai seo', 'semantic seo', 'topical map', 'content marketing', 'seo', 'llm', 'search'].filter(k => hay.includes(k)).length;\n  it.priority_score = (it.score || 0) + (it.comments_count || 0) * 2 + hits * 5 + (it.platform === 'linkedin' ? 6 : 0);\n  deduped.push(it);\n}\ndeduped.sort((a, b) => b.priority_score - a.priority_score);\n\nfor (const b of Object.keys(diagnostics.branch_counts)) {\n  if (!diagnostics.branch_counts[b]) diagnostics.empty_branches.push(b);\n}\nfor (const it of deduped) {\n  const b = it.collection_branch;\n  diagnostics.sample_items_by_branch[b] = diagnostics.sample_items_by_branch[b] || [];\n  if (diagnostics.sample_items_by_branch[b].length < 3) diagnostics.sample_items_by_branch[b].push({ title: it.title, url: it.url });\n}\n\nconst selectedItems = deduped.slice(0, Number(config.max_storage_rows || 25));\n\nfunction fallbackRowFromItem(it) {\n  const excerpt = clean(it.text).slice(0, 700);\n  const headline = clean(it.title || excerpt.slice(0, 120));\n  const platformTone = it.platform === 'reddit'\n    ? 'This is a raw operator complaint or confusion signal, not a polished best practice.'\n    : (it.platform === 'linkedin'\n      ? 'This is a positioning claim from a public post, so separate conviction from evidence.'\n      : 'This is implementation-level friction, which usually points to repeatable product or content gaps.');\n  return {\n    date: new Date().toISOString().slice(0, 10),\n    run_started_at: started,\n    platform: it.platform,\n    collection_method: it.collection_method,\n    source_label: it.source_label,\n    community: it.community,\n    author: it.author,\n    title: headline,\n    url: it.url,\n    canonical_key: it.url || [it.platform, it.title, it.author].join('|'),\n    published_at: it.published_at,\n    summary: excerpt.slice(0, 500),\n    counterpoint: platformTone,\n    operator_take: 'Pull out the exact claim in this thread, compare it against live SERP behavior or workflow evidence, then decide whether it deserves a post, video, or product experiment.',\n    hidden_assumption: 'The author assumes their example scales beyond the exact context shown in the post.',\n    proof_gap: 'Missing: a concrete before/after example, a narrow test setup, or evidence tied to one audience and page type.',\n    curiosity: 'What is the sharpest non-obvious question hiding inside this discussion?',\n    research_angle: 'Turn the claim into a small proof-oriented teardown instead of another opinion post.',\n    content_hook: headline,\n    video_angle: 'Use the original claim as the opening, then test where it breaks in real SEO or content operations.',\n    debate_angle: 'Frame the disagreement clearly: what one camp believes, what the other side misses, and what evidence would settle it.',\n    linkedin_post_angle: 'Write this as a founder point of view rooted in one concrete claim from the source, then challenge it with evidence or a live example.',\n    x_thread_angle: 'Open with the sharpest claim in the discussion, then unpack the failure mode, the counterexample, and the test worth running.',\n    youtube_hook: 'Start with the argument people keep repeating, then show where the real implementation or measurement problem begins.',\n    creator_notes: 'Use the strongest quote, objection, or implementation detail as the creative anchor rather than summarizing the whole thread.',\n    evidence_to_collect: 'Collect screenshots, before/after examples, SERP patterns, workflow steps, or conversion evidence that can either support or kill the claim.',\n    argument_map: 'Claim -> objection -> hidden assumption -> proof needed -> creator angle.',\n    hashtags: (it.hashtags || []).join(', '),\n    hashtag_names: (it.hashtags || []).map(h => h.replace(/^#/, '')).filter(Boolean),\n    raw_text_excerpt: excerpt,\n    score: it.score,\n    comments_count: it.comments_count,\n    google_sheet_id: config.google_sheet_id,\n    google_sheet_tab: config.google_sheet_tab,\n    notion_database_id: config.notion_database_id\n  };\n}\n\nfunction promptSafeJsonParse(value) {\n  const raw = clean(value);\n  if (!raw) return null;\n  const candidates = [raw];\n  const fenced = raw.match(/```(?:json)?\\s*([\\s\\S]*?)```/i);\n  if (fenced && fenced[1]) candidates.push(clean(fenced[1]));\n  const firstBrace = raw.indexOf('{');\n  const lastBrace = raw.lastIndexOf('}');\n  if (firstBrace >= 0 && lastBrace > firstBrace) candidates.push(raw.slice(firstBrace, lastBrace + 1));\n  for (const candidate of candidates) {\n    try { return JSON.parse(candidate); } catch {}\n  }\n  return null;\n}\n\nfunction responseText(response) {\n  const content = response && response.choices && response.choices[0] && response.choices[0].message && response.choices[0].message.content;\n  if (Array.isArray(content)) return content.map(part => typeof part === 'string' ? part : (part && part.text) || '').join('').trim();\n  return clean(content || '');\n}\n\nfunction tokenize(text) {\n  return Array.from(new Set(clean(text).toLowerCase().match(/[a-z][a-z0-9+-]{2,}/g) || []));\n}\n\nfunction relatedItems(base, pool, limit) {\n  const baseTokens = new Set(tokenize([base.title, base.text, base.community, base.author].join(' ')));\n  return pool\n    .filter(candidate => candidate !== base)\n    .map(candidate => {\n      const tokens = tokenize([candidate.title, candidate.text, candidate.community, candidate.author].join(' '));\n      let overlap = 0;\n      for (const token of tokens) if (baseTokens.has(token)) overlap += 1;\n      let score = overlap;\n      if (candidate.platform === base.platform) score += 2;\n      if (candidate.community && candidate.community === base.community) score += 2;\n      return { candidate, score };\n    })\n    .filter(entry => entry.score > 0)\n    .sort((a, b) => b.score - a.score)\n    .slice(0, limit)\n    .map(entry => ({\n      platform: entry.candidate.platform,\n      title: entry.candidate.title,\n      community: entry.candidate.community,\n      author: entry.candidate.author,\n      score: entry.candidate.score,\n      comments_count: entry.candidate.comments_count,\n      text: clean(entry.candidate.text).slice(0, 320)\n    }));\n}\n\nasync function callOpenRouterJson(model, systemPrompt, userPrompt) {\n  const response = await httpRequest({\n    method: 'POST',\n    url: 'https://openrouter.ai/api/v1/chat/completions',\n    headers: {\n      Authorization: 'Bearer ' + $env.OPENROUTER_API_KEY,\n      'Content-Type': 'application/json',\n      'HTTP-Referer': 'https://contentmaps.ai',\n      'X-Title': 'ContentMaps Daily SEO Discussion Radar'\n    },\n    body: {\n      model,\n      temperature: Number(config.openrouter_temperature ?? 0.35),\n      top_p: Number(config.openrouter_top_p ?? 0.9),\n      reasoning: { effort: String(config.openrouter_reasoning_effort || 'high'), exclude: true },\n      response_format: { type: 'json_object' },\n      messages: [\n        { role: 'system', content: systemPrompt },\n        { role: 'user', content: userPrompt }\n      ]\n    },\n    json: true\n  });\n  const parsed = promptSafeJsonParse(responseText(response));\n  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Model returned invalid JSON object.');\n  return parsed;\n}\n\nfunction canHydrateWithFirecrawl(row) {\n  if (!row.url || !$env.FIRECRAWL_API_KEY) return false;\n  if (String(row.raw_text_excerpt || '').length >= Number(config.firecrawl_hydration_min_chars || 450)) return false;\n  if (row.platform === 'linkedin' && !/(\\/posts\\/|\\/feed\\/update\\/|\\/pulse\\/)/i.test(row.url)) return false;\n  if (/\\/recent-activity\\//i.test(row.url)) return false;\n  return true;\n}\n\nlet firecrawlHydrationAttempts = 0;\n\nasync function maybeHydrateWithFirecrawl(row) {\n  if (firecrawlHydrationAttempts >= Number(config.firecrawl_hydration_limit || 6)) return row;\n  if (!canHydrateWithFirecrawl(row)) return row;\n  firecrawlHydrationAttempts += 1;\n  try {\n    const response = await httpRequest({\n      method: 'POST',\n      url: config.firecrawl_base_url + '/v2/scrape',\n      headers: {\n        Authorization: 'Bearer ' + $env.FIRECRAWL_API_KEY,\n        'Content-Type': 'application/json'\n      },\n      body: {\n        url: row.url,\n        formats: ['markdown'],\n        onlyMainContent: true,\n        waitFor: 1500,\n        timeout: 20000,\n        storeInCache: false\n      },\n      json: true\n    });\n    const markdown = clean(response && response.data && response.data.markdown || response && response.markdown || '');\n    if (markdown && !junk(markdown)) {\n      return {\n        ...row,\n        raw_text_excerpt: markdown.slice(0, 700),\n        source_text_for_ai: markdown.slice(0, 2200),\n        content_hydrated_by: 'firecrawl'\n      };\n    }\n    diag('warning', 'firecrawl_hydration', 'Firecrawl scrape returned unusable content for one row.', { title: row.title, url: row.url });\n  } catch (e) {\n    diag('warning', 'firecrawl_hydration', 'Firecrawl scrape failed for one row.', { title: row.title, url: row.url, error: e.message });\n  }\n  return row;\n}\n\nasync function enrichBatch(batchRows) {\n  const hydratedRows = [];\n  for (const row of batchRows) hydratedRows.push(await maybeHydrateWithFirecrawl(row));\n  const systemPrompt = [\n    'You are an elite SEO, content, and AI-search strategist helping ContentMaps.ai build better YouTube videos, founder-led LinkedIn posts, and sharp X threads.',\n    'Write like smart operators arguing in a private Reddit thread: concrete, skeptical, a little sharp, and anchored to details from the supplied posts.',\n    'Do not collapse everything into the same template. Each item must feel like it came from its own claim, objection, or implementation problem.',\n    'Never use these phrases or close variants: \"source-level validation\", \"discussion seed\", \"primary discovery surface\", \"what changes if\", \"walk through the claim\", \"sounds obvious until\".',\n    'If a post is weak, call it weak and explain why.',\n    'Return valid JSON only.'\n  ].join(nl);\n  const userPrompt = [\n    'Analyze this batch of up to 3 discussion items together so you can see the argument, tension, and repeated blind spots across them.',\n    '',\n    'Return strict JSON with this shape:',\n    JSON.stringify({\n      batch_takeaway: '1-2 sentence synthesis of the main argument in the batch',\n      creator_priority: 'What to create first and why',\n      items: [\n        {\n          canonical_key: 'must exactly match input canonical_key',\n          summary: '2-3 sentence synthesis of the actual claim or tension',\n          counterpoint: 'specific challenge or why the claim may be overstated',\n          operator_take: 'what the founder/operator should do next',\n          hidden_assumption: 'unproven assumption',\n          proof_gap: 'exact missing evidence',\n          curiosity: 'non-obvious question worth exploring',\n          research_angle: 'teardown, experiment, or essay angle',\n          content_hook: 'specific hook for LinkedIn or X',\n          video_angle: 'specific YouTube angle with audience + demonstration plan',\n          debate_angle: 'how to frame the disagreement',\n          linkedin_post_angle: 'best LinkedIn post framing',\n          x_thread_angle: 'best X thread framing',\n          youtube_hook: 'opening hook for the video',\n          creator_notes: 'notes for writing or recording',\n          evidence_to_collect: 'proof assets to gather',\n          argument_map: 'claim -> objection -> proof path',\n          signal_label: 'signal|mixed|noise',\n          why_now: 'why this matters now',\n          interesting_points: ['3 concise bullet-like points']\n        }\n      ]\n    }, null, 2),\n    '',\n    'Rules:',\n    '- Treat Reddit as pain, objections, and implementation honesty.',\n    '- Treat LinkedIn as positioning, hot takes, and self-branding; separate conviction from proof.',\n    '- Treat Stack Exchange as practical implementation friction.',\n    '- content_hook, linkedin_post_angle, x_thread_angle, and youtube_hook must all be different from each other.',\n    '- video_angle must name the audience, the proof or demo, and the payoff.',\n    '- creator_notes should help someone write or record fast, not summarize.',\n    '- evidence_to_collect should list the exact screenshots, examples, metrics, or experiments needed.',\n    '- If one item is mostly noise, mark it and say what part is still salvageable.',\n    '',\n    'Bad example hook: \"The SEO advice sounds obvious until you ask what proof would change your mind.\"',\n    'Good example hook: \"Everyone says AI Overviews kill clicks, but almost nobody breaks out which page types lose demand and which ones quietly gain assisted conversions.\"',\n    '',\n    'Batch items JSON:',\n    JSON.stringify(hydratedRows.map(row => ({\n      canonical_key: row.canonical_key,\n      platform: row.platform,\n      community: row.community,\n      source_label: row.source_label,\n      author: row.author,\n      title: row.title,\n      url: row.url,\n      published_at: row.published_at,\n      score: row.score,\n      comments_count: row.comments_count,\n      related_context: row.related_context || [],\n      content_hydrated_by: row.content_hydrated_by || '',\n      text: clean(row.source_text_for_ai || row.raw_text_excerpt || '').slice(0, 2200)\n    })))\n  ].join(nl);\n\n  const models = [\n    config.openrouter_model || 'deepseek/deepseek-v4-pro',\n    config.openrouter_fallback_model || 'openai/gpt-oss-120b'\n  ];\n  let lastError = '';\n  for (const model of models) {\n    try {\n      const enriched = await callOpenRouterJson(model, systemPrompt, userPrompt);\n      if (!Array.isArray(enriched.items)) throw new Error('Batch JSON did not include an items array.');\n      return { ok: true, model, batch_takeaway: clean(enriched.batch_takeaway || ''), creator_priority: clean(enriched.creator_priority || ''), items: enriched.items };\n    } catch (e) {\n      lastError = e.message;\n    }\n  }\n  return { ok: false, error: lastError || 'Unknown OpenRouter batch enrichment failure.' };\n}\n\nasync function enrichAllRows(baseRows) {\n  const hydratedRows = [];\n  for (const row of baseRows) hydratedRows.push(await maybeHydrateWithFirecrawl(row));\n  const systemPrompt = [\n    'You are an elite SEO, content, and AI-search strategist helping ContentMaps.ai build better YouTube videos, founder-led LinkedIn posts, and sharp X threads.',\n    'Write like smart operators arguing in a private Reddit thread: concrete, skeptical, a little sharp, and anchored to details from the supplied posts.',\n    'Do not collapse everything into the same template. Each item must feel like it came from its own claim, objection, or implementation problem.',\n    'Return valid JSON only.'\n  ].join(nl);\n  const userPrompt = [\n    'Analyze the full discussion set in one pass. Use the cross-post context to sharpen the output for each item.',\n    '',\n    'Return strict JSON with this shape:',\n    JSON.stringify({\n      overall_digest_markdown: 'markdown digest with tensions, proof gaps, experiments, product ideas, and creator opportunities',\n      creator_priority: 'What to create first and why',\n      items: [\n        {\n          canonical_key: 'must exactly match input canonical_key',\n          summary: '2-3 sentence synthesis of the actual claim or tension',\n          counterpoint: 'specific challenge or why the claim may be overstated',\n          operator_take: 'what the founder/operator should do next',\n          hidden_assumption: 'unproven assumption',\n          proof_gap: 'exact missing evidence',\n          curiosity: 'non-obvious question worth exploring',\n          research_angle: 'teardown, experiment, or essay angle',\n          content_hook: 'specific hook for LinkedIn or X',\n          video_angle: 'specific YouTube angle with audience + demonstration plan',\n          debate_angle: 'how to frame the disagreement',\n          linkedin_post_angle: 'best LinkedIn post framing',\n          x_thread_angle: 'best X thread framing',\n          youtube_hook: 'opening hook for the video',\n          creator_notes: 'notes for writing or recording',\n          evidence_to_collect: 'proof assets to gather',\n          argument_map: 'claim -> objection -> proof path',\n          signal_label: 'signal|mixed|noise',\n          why_now: 'why this matters now',\n          interesting_points: ['3 concise bullet-like points']\n        }\n      ]\n    }, null, 2),\n    '',\n    'Rules:',\n    '- Treat Reddit as pain, objections, and implementation honesty.',\n    '- Treat LinkedIn as positioning, hot takes, and self-branding; separate conviction from proof.',\n    '- Treat Stack Exchange as practical implementation friction.',\n    '- content_hook, linkedin_post_angle, x_thread_angle, and youtube_hook must all be different from each other.',\n    '- video_angle must name the audience, the proof or demo, and the payoff.',\n    '- creator_notes should help someone write or record fast, not summarize.',\n    '- evidence_to_collect should list the exact screenshots, examples, metrics, or experiments needed.',\n    '',\n    'Items JSON:',\n    JSON.stringify(hydratedRows.map(row => ({\n      canonical_key: row.canonical_key,\n      platform: row.platform,\n      community: row.community,\n      source_label: row.source_label,\n      author: row.author,\n      title: row.title,\n      url: row.url,\n      published_at: row.published_at,\n      score: row.score,\n      comments_count: row.comments_count,\n      related_context: row.related_context || [],\n      content_hydrated_by: row.content_hydrated_by || '',\n      text: clean(row.source_text_for_ai || row.raw_text_excerpt || '').slice(0, 2200)\n    })))\n  ].join(nl);\n\n  const models = [\n    config.openrouter_model || 'deepseek/deepseek-v4-pro',\n    config.openrouter_fallback_model || 'openai/gpt-oss-120b'\n  ];\n  let lastError = '';\n  for (const model of models) {\n    try {\n      const enriched = await callOpenRouterJson(model, systemPrompt, userPrompt);\n      if (!Array.isArray(enriched.items)) throw new Error('Set-level JSON did not include an items array.');\n      return {\n        ok: true,\n        model,\n        creator_priority: clean(enriched.creator_priority || ''),\n        overall_digest_markdown: clean(enriched.overall_digest_markdown || ''),\n        items: enriched.items\n      };\n    } catch (e) {\n      lastError = e.message;\n    }\n  }\n  return { ok: false, error: lastError || 'Unknown OpenRouter set enrichment failure.' };\n}\n\nasync function buildDigest(rows, modelsUsed) {\n  const systemPrompt = [\n    'You are an elite SEO research lead writing a founder digest for ContentMaps.ai.',\n    'Your job is to sound like an informed operator, not a content intern.',\n    'Prefer tensions, disagreements, proof gaps, experiments, and product opportunities over summary.',\n    'Return markdown only.'\n  ].join(nl);\n  const userPrompt = [\n    'Build a daily digest from enriched discussion rows.',\n    'Cover:',\n    '- what people are arguing about',\n    '- what actually changed',\n    '- contrarian takes worth testing',\n    '- proof gaps',\n    '- YouTube ideas',\n    '- LinkedIn/X post angles',\n    '- experiments to run',\n    '- features or workflows ContentMaps.ai should consider building',\n    '- what is noise',\n    '',\n    'Use short sections and sharp bullets. Avoid repeating the same framing across items.',\n    '',\n    'Rows JSON:',\n    JSON.stringify(rows.slice(0, 15).map(row => ({\n      platform: row.platform,\n      community: row.community,\n      title: row.title,\n      author: row.author,\n      score: row.score,\n      comments_count: row.comments_count,\n      summary: row.summary,\n      counterpoint: row.counterpoint,\n      operator_take: row.operator_take,\n      proof_gap: row.proof_gap,\n      content_hook: row.content_hook,\n      video_angle: row.video_angle,\n      research_angle: row.research_angle,\n      debate_angle: row.debate_angle,\n      linkedin_post_angle: row.linkedin_post_angle,\n      x_thread_angle: row.x_thread_angle,\n      youtube_hook: row.youtube_hook,\n      creator_notes: row.creator_notes,\n      evidence_to_collect: row.evidence_to_collect,\n      argument_map: row.argument_map\n    }))),\n    '',\n    'Model usage:',\n    JSON.stringify(modelsUsed)\n  ].join(nl);\n  const models = [\n    config.openrouter_model || 'deepseek/deepseek-v4-pro',\n    config.openrouter_fallback_model || 'openai/gpt-oss-120b'\n  ];\n  let lastError = '';\n  for (const model of models) {\n    try {\n      const response = await httpRequest({\n        method: 'POST',\n        url: 'https://openrouter.ai/api/v1/chat/completions',\n        headers: {\n          Authorization: 'Bearer ' + $env.OPENROUTER_API_KEY,\n          'Content-Type': 'application/json',\n          'HTTP-Referer': 'https://contentmaps.ai',\n          'X-Title': 'ContentMaps Daily SEO Discussion Radar'\n        },\n        body: {\n          model,\n          temperature: Number(config.openrouter_temperature ?? 0.35),\n          top_p: Number(config.openrouter_top_p ?? 0.9),\n          reasoning: { effort: String(config.openrouter_reasoning_effort || 'high'), exclude: true },\n          messages: [\n            { role: 'system', content: systemPrompt },\n            { role: 'user', content: userPrompt }\n          ]\n        },\n        json: true\n      });\n      const text = responseText(response);\n      if (text) return { ok: true, text, model };\n      lastError = 'Digest response was empty.';\n    } catch (e) {\n      lastError = e.message;\n    }\n  }\n  return { ok: false, error: lastError || 'Unknown digest failure.' };\n}\n\nconst rows = [];\nconst modelsUsed = {};\nlet openrouter_status = 'skipped';\nlet aiDigest = '';\nif (selectedItems.length && $env.OPENROUTER_API_KEY) {\n  openrouter_status = 'ok';\n  const baseRows = selectedItems.map(item => ({\n    ...fallbackRowFromItem(item),\n    source_text_for_ai: clean(item.text).slice(0, 2200),\n    related_context: relatedItems(item, deduped, 2)\n  }));\n  const enrichment = await enrichAllRows(baseRows);\n  if (enrichment.ok) {\n    const enrichedByKey = {};\n    for (const entry of enrichment.items) {\n      const key = clean(entry.canonical_key || '');\n      if (key) enrichedByKey[key] = entry;\n    }\n    for (const baseRow of baseRows) {\n      const enriched = enrichedByKey[baseRow.canonical_key] || {};\n      const row = {\n        ...baseRow,\n        summary: clean([\n          enriched.summary || baseRow.summary,\n          Array.isArray(enriched.interesting_points) && enriched.interesting_points.length\n            ? 'Interesting points: ' + enriched.interesting_points.map(v => clean(v)).filter(Boolean).slice(0, 3).join(' | ')\n            : ''\n        ].filter(Boolean).join(' ')).slice(0, 500),\n        counterpoint: clean(enriched.counterpoint || baseRow.counterpoint).slice(0, 500),\n        operator_take: clean([\n          enriched.operator_take || baseRow.operator_take,\n          enriched.why_now ? 'Why now: ' + enriched.why_now : '',\n          enrichment.creator_priority ? 'Priority: ' + enrichment.creator_priority : ''\n        ].filter(Boolean).join(' ')).slice(0, 500),\n        hidden_assumption: clean(enriched.hidden_assumption || baseRow.hidden_assumption).slice(0, 500),\n        proof_gap: clean(enriched.proof_gap || baseRow.proof_gap).slice(0, 500),\n        curiosity: clean(enriched.curiosity || baseRow.curiosity).slice(0, 500),\n        research_angle: clean(enriched.research_angle || baseRow.research_angle).slice(0, 500),\n        content_hook: clean(enriched.content_hook || baseRow.content_hook).slice(0, 500),\n        video_angle: clean(enriched.video_angle || baseRow.video_angle).slice(0, 500),\n        debate_angle: clean(enriched.debate_angle || baseRow.debate_angle).slice(0, 500),\n        linkedin_post_angle: clean(enriched.linkedin_post_angle || baseRow.linkedin_post_angle).slice(0, 500),\n        x_thread_angle: clean(enriched.x_thread_angle || baseRow.x_thread_angle).slice(0, 500),\n        youtube_hook: clean(enriched.youtube_hook || baseRow.youtube_hook).slice(0, 500),\n        creator_notes: clean(enriched.creator_notes || baseRow.creator_notes).slice(0, 500),\n        evidence_to_collect: clean(enriched.evidence_to_collect || baseRow.evidence_to_collect).slice(0, 500),\n        argument_map: clean(enriched.argument_map || baseRow.argument_map).slice(0, 500),\n        signal_label: clean(enriched.signal_label || ''),\n        ai_model: enrichment.model\n      };\n      rows.push(row);\n    }\n    modelsUsed[enrichment.model] = (modelsUsed[enrichment.model] || 0) + 1;\n    aiDigest = enrichment.overall_digest_markdown || '';\n  } else {\n    for (const baseRow of baseRows) rows.push(baseRow);\n    openrouter_status = 'partial_fallback';\n    diag('warning', 'openrouter', 'Set-level enrichment failed; stored source-backed fallback copy.', { error: enrichment.error });\n  }\n} else if (!selectedItems.length) {\n  diag('warning', 'openrouter', 'OpenRouter skipped because there were zero real items.');\n} else {\n  diag('error', 'openrouter', 'OPENROUTER_API_KEY is not available in the n8n Code node environment.');\n}\nif (openrouter_status === 'partial_fallback' && aiDigest) openrouter_status = 'ok_with_row_fallbacks';\n\nconst topRows = rows.slice(0, 5);\nconst fallbackInsights = topRows.map((r, i) => [\n  String(i + 1) + '. [' + r.platform + '] ' + r.title,\n  r.url,\n  'Hook: ' + r.content_hook,\n  'Debate angle: ' + r.debate_angle,\n  'LinkedIn angle: ' + r.linkedin_post_angle,\n  'X thread: ' + r.x_thread_angle,\n  'Operator take: ' + r.operator_take,\n  'Proof gap: ' + r.proof_gap,\n  'Video angle: ' + r.video_angle\n].join(nl)).join(nl + nl);\nconst diagLines = diagnostics.warnings.concat(diagnostics.errors).map(d => '- [' + d.branch + '] ' + d.message + (d.status ? ' status=' + d.status : '')).join(nl);\nconst digest = [\n  'Daily SEO Discussion Radar',\n  'Run started: ' + started,\n  'Total collected: ' + collected.length,\n  'Deduped real items: ' + deduped.length,\n  'Storage-ready rows: ' + rows.length,\n  'OpenRouter: ' + openrouter_status,\n  'Model usage: ' + JSON.stringify(modelsUsed),\n  '',\n  'Branch counts:',\n  JSON.stringify(diagnostics.branch_counts, null, 2),\n  '',\n  'AI Digest:',\n  aiDigest || fallbackInsights || 'No real discussion items were collected.',\n  '',\n  'Diagnostics:',\n  diagLines || 'No warnings or errors.'\n].join(nl);\n\nreturn [{\n  json: {\n    run_started_at: started,\n    has_real_items: rows.length > 0,\n    total_collected: collected.length,\n    total_deduped: deduped.length,\n    storage_rows: rows,\n    diagnostics,\n    normalized_sample: deduped.slice(0, 5),\n    digest_text: digest,\n    digest_email: config.digest_email,\n    digest_from_email: config.digest_from_email,\n    google_sheet_id: config.google_sheet_id,\n    google_sheet_tab: config.google_sheet_tab,\n    notion_database_id: config.notion_database_id\n  }\n}];\n"
+        },
+        "id": "441be964-d4b3-496f-8fdc-3091706ec9a1",
+        "name": "Normalize, Dedupe, Score, Digest",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1072,
+          352
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "real-items",
+                "leftValue": "={{ $json.has_real_items ? \"yes\" : \"\" }}",
+                "rightValue": "yes",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "3d507428-da8b-417c-b266-6495a952fe6e",
+        "name": "IF - Real Items Collected?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          1328,
+          352
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "\nconst summary = $input.first().json;\nconst rows = Array.isArray(summary.storage_rows) ? summary.storage_rows : [];\nconst diagnostics = summary.diagnostics || { errors: [], warnings: [] };\nconst httpRequest = this.helpers.httpRequest.bind(this.helpers);\nlet notionStored = 0;\nlet notionErrors = 0;\n\nfunction text(content) {\n  const value = String(content || '').trim();\n  return value ? [{ type: 'text', text: { content: value.slice(0, 1900) } }] : [];\n}\nfunction select(value) {\n  return value ? { name: String(value).slice(0, 100) } : null;\n}\nfunction dateValue(value) {\n  const raw = String(value || '').trim();\n  if (!raw) return null;\n  if (!/^\\d{4}-\\d{2}-\\d{2}/.test(raw)) return null;\n  const parsed = Date.parse(raw);\n  return Number.isFinite(parsed) ? { start: raw } : null;\n}\nfunction props(row) {\n  return {\n    Title: { title: text(row.title || 'Untitled radar item') },\n    'Canonical Key': { rich_text: text(row.canonical_key || row.url || row.title) },\n    'Source URL': { url: row.url || null },\n    'Collected Date': { date: dateValue(row.date) },\n    'Published At': { date: dateValue(row.published_at) },\n    Platform: { select: select(row.platform) },\n    'Collection Method': { select: select(row.collection_method) },\n    Community: { rich_text: text(row.community) },\n    Author: { rich_text: text(row.author) },\n    'Source Label': { rich_text: text(row.source_label) },\n    Summary: { rich_text: text(row.summary) },\n    Counterpoint: { rich_text: text(row.counterpoint) },\n    'Operator Take': { rich_text: text(row.operator_take) },\n    'Hidden Assumption': { rich_text: text(row.hidden_assumption) },\n    'Proof Gap': { rich_text: text(row.proof_gap) },\n    Curiosity: { rich_text: text(row.curiosity) },\n    'Research Angle': { rich_text: text(row.research_angle) },\n    'Debate Angle': { rich_text: text(row.debate_angle) },\n    'LinkedIn Post Angle': { rich_text: text(row.linkedin_post_angle) },\n    'X Thread Angle': { rich_text: text(row.x_thread_angle) },\n    'YouTube Hook': { rich_text: text(row.youtube_hook) },\n    'Creator Notes': { rich_text: text(row.creator_notes) },\n    'Evidence To Collect': { rich_text: text(row.evidence_to_collect) },\n    'Argument Map': { rich_text: text(row.argument_map) },\n    'Signal Label': { rich_text: text(row.signal_label) },\n    'Content Hook': { rich_text: text(row.content_hook) },\n    'Video Angle': { rich_text: text(row.video_angle) },\n    'Content Hydrated By': { rich_text: text(row.content_hydrated_by) },\n    Hashtags: { multi_select: (row.hashtag_names || []).slice(0, 25).map(name => ({ name: String(name).slice(0, 100) })) },\n    'Raw Text Excerpt': { rich_text: text(row.raw_text_excerpt) },\n    'Reddit Score': { number: Number(row.score || 0) },\n    'Comments Count': { number: Number(row.comments_count || 0) },\n    'Run Started At': { date: dateValue(row.run_started_at) }\n  };\n}\n\nif (!rows.length) {\n  summary.notion_stored_count = 0;\n  return [{ json: summary }];\n}\nif (!$env.NOTION_API_KEY) {\n  diagnostics.errors = diagnostics.errors || [];\n  diagnostics.errors.push({ branch: 'notion', message: 'NOTION_API_KEY is not available in the n8n Code node environment.' });\n  summary.notion_stored_count = 0;\n  summary.notion_error_count = rows.length;\n  return [{ json: summary }];\n}\n\nasync function notion(method, url, body) {\n  return await httpRequest({\n    method,\n    url,\n    headers: { Authorization: 'Bearer ' + $env.NOTION_API_KEY, 'Notion-Version': '2022-06-28', 'Content-Type': 'application/json' },\n    body,\n    json: true\n  });\n}\n\nfor (const row of rows) {\n  try {\n    const query = await notion('POST', 'https://api.notion.com/v1/databases/' + encodeURIComponent(row.notion_database_id) + '/query', { filter: { property: 'Canonical Key', rich_text: { equals: row.canonical_key } }, page_size: 1 });\n    const existing = Array.isArray(query.results) && query.results[0];\n    if (existing && existing.id) {\n      await notion('PATCH', 'https://api.notion.com/v1/pages/' + encodeURIComponent(existing.id), { properties: props(row) });\n    } else {\n      await notion('POST', 'https://api.notion.com/v1/pages', { parent: { database_id: row.notion_database_id }, properties: props(row) });\n    }\n    notionStored += 1;\n  } catch (e) {\n    notionErrors += 1;\n    diagnostics.errors = diagnostics.errors || [];\n    diagnostics.errors.push({ branch: 'notion', message: 'Notion upsert failed for one row.', title: row.title, error: e.message });\n  }\n}\nsummary.diagnostics = diagnostics;\nsummary.notion_stored_count = notionStored;\nsummary.notion_error_count = notionErrors;\nsummary.digest_text = summary.digest_text + '\\n\\nStorage:\\n- Notion upserted: ' + notionStored + '\\n- Notion errors: ' + notionErrors + '\\n- Google Sheets rows queued: ' + rows.length;\nreturn [{ json: summary }];\n"
+        },
+        "id": "6cd43b3b-153a-44db-8abf-be8486415b93",
+        "name": "Notion - Upsert Discussion Pages",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1584,
+          256
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "\nconst rows = Array.isArray($input.first().json.storage_rows) ? $input.first().json.storage_rows : [];\nreturn rows.map(row => ({ json: row }));\n"
+        },
+        "id": "dad6bc87-fb06-4c08-b9c3-66a83f305d50",
+        "name": "Build Google Sheets Rows",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1840,
+          256
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "appendOrUpdate",
+          "documentId": {
+            "__rl": true,
+            "value": "={{ $json.google_sheet_id }}",
+            "mode": "id"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "={{ $json.google_sheet_tab }}",
+            "mode": "name"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "date": "={{ $json.date }}",
+              "run_started_at": "={{ $json.run_started_at }}",
+              "platform": "={{ $json.platform }}",
+              "collection_method": "={{ $json.collection_method }}",
+              "source_label": "={{ $json.source_label }}",
+              "community": "={{ $json.community }}",
+              "author": "={{ $json.author }}",
+              "title": "={{ $json.title }}",
+              "url": "={{ $json.url }}",
+              "canonical_key": "={{ $json.canonical_key }}",
+              "published_at": "={{ $json.published_at }}",
+              "summary": "={{ $json.summary }}",
+              "counterpoint": "={{ $json.counterpoint }}",
+              "operator_take": "={{ $json.operator_take }}",
+              "hidden_assumption": "={{ $json.hidden_assumption }}",
+              "proof_gap": "={{ $json.proof_gap }}",
+              "curiosity": "={{ $json.curiosity }}",
+              "research_angle": "={{ $json.research_angle }}",
+              "debate_angle": "={{ $json.debate_angle }}",
+              "linkedin_post_angle": "={{ $json.linkedin_post_angle }}",
+              "x_thread_angle": "={{ $json.x_thread_angle }}",
+              "youtube_hook": "={{ $json.youtube_hook }}",
+              "creator_notes": "={{ $json.creator_notes }}",
+              "evidence_to_collect": "={{ $json.evidence_to_collect }}",
+              "argument_map": "={{ $json.argument_map }}",
+              "signal_label": "={{ $json.signal_label }}",
+              "content_hook": "={{ $json.content_hook }}",
+              "video_angle": "={{ $json.video_angle }}",
+              "hashtags": "={{ $json.hashtags }}",
+              "hashtag_names": "={{ $json.hashtag_names }}",
+              "raw_text_excerpt": "={{ $json.raw_text_excerpt }}",
+              "content_hydrated_by": "={{ $json.content_hydrated_by }}",
+              "score": "={{ $json.score }}",
+              "comments_count": "={{ $json.comments_count }}",
+              "google_sheet_id": "={{ $json.google_sheet_id }}",
+              "google_sheet_tab": "={{ $json.google_sheet_tab }}",
+              "notion_database_id": "={{ $json.notion_database_id }}"
+            },
+            "matchingColumns": [
+              "canonical_key"
+            ],
+            "schema": [
+              {
+                "id": "date",
+                "displayName": "date",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "run_started_at",
+                "displayName": "run_started_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "platform",
+                "displayName": "platform",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "collection_method",
+                "displayName": "collection_method",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "source_label",
+                "displayName": "source_label",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "community",
+                "displayName": "community",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "author",
+                "displayName": "author",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "title",
+                "displayName": "title",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "url",
+                "displayName": "url",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "canonical_key",
+                "displayName": "canonical_key",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "published_at",
+                "displayName": "published_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "counterpoint",
+                "displayName": "counterpoint",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "operator_take",
+                "displayName": "operator_take",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "hidden_assumption",
+                "displayName": "hidden_assumption",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "proof_gap",
+                "displayName": "proof_gap",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "curiosity",
+                "displayName": "curiosity",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "research_angle",
+                "displayName": "research_angle",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "debate_angle",
+                "displayName": "debate_angle",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "linkedin_post_angle",
+                "displayName": "linkedin_post_angle",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "x_thread_angle",
+                "displayName": "x_thread_angle",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "youtube_hook",
+                "displayName": "youtube_hook",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "creator_notes",
+                "displayName": "creator_notes",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "evidence_to_collect",
+                "displayName": "evidence_to_collect",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "argument_map",
+                "displayName": "argument_map",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "signal_label",
+                "displayName": "signal_label",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "content_hook",
+                "displayName": "content_hook",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "video_angle",
+                "displayName": "video_angle",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "hashtags",
+                "displayName": "hashtags",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "hashtag_names",
+                "displayName": "hashtag_names",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "raw_text_excerpt",
+                "displayName": "raw_text_excerpt",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "content_hydrated_by",
+                "displayName": "content_hydrated_by",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "score",
+                "displayName": "score",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "comments_count",
+                "displayName": "comments_count",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "google_sheet_id",
+                "displayName": "google_sheet_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "google_sheet_tab",
+                "displayName": "google_sheet_tab",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "notion_database_id",
+                "displayName": "notion_database_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "useAppend": true
+          }
+        },
+        "id": "725f69e0-4843-4152-a718-5ccc4432f9ef",
+        "name": "Google Sheets - Append or Update Discussion Row",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          2112,
+          256
+        ],
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "\nlet summary = $input.first().json || {};\ntry {\n  const notionSummary = $('Notion - Upsert Discussion Pages').first().json;\n  if (notionSummary && notionSummary.digest_text) summary = notionSummary;\n} catch (e) {}\n\nconst rows = Array.isArray(summary.storage_rows) ? summary.storage_rows : [];\nconst diagnostics = summary.diagnostics || { errors: [], warnings: [] };\nconst httpRequest = this.helpers.httpRequest.bind(this.helpers);\nconst tasksDatabaseId = '349b971dd0a880a09509f5ede1859dfa';\n\nfunction text(content) {\n  const value = String(content || '').trim();\n  return value ? [{ type: 'text', text: { content: value.slice(0, 1900) } }] : [];\n}\nfunction select(value) {\n  return value ? { name: String(value).slice(0, 100) } : null;\n}\nfunction multiSelect(values) {\n  return Array.isArray(values) ? values.filter(Boolean).slice(0, 10).map(value => ({ name: String(value).slice(0, 100) })) : [];\n}\nfunction dateValue(value) {\n  const raw = String(value || '').trim();\n  if (!raw) return null;\n  if (!/^\\\\d{4}-\\\\d{2}-\\\\d{2}/.test(raw)) return null;\n  const parsed = Date.parse(raw);\n  return Number.isFinite(parsed) ? { start: raw.slice(0, 10) } : null;\n}\nfunction clip(value, limit) {\n  return String(value || '').replace(/\\\\s+/g, ' ').trim().slice(0, limit);\n}\n\nif (!rows.length) {\n  summary.founder_task_created = false;\n  return [{ json: summary }];\n}\nif (!$env.NOTION_API_KEY) {\n  diagnostics.errors = diagnostics.errors || [];\n  diagnostics.errors.push({ branch: 'notion_tasks', message: 'NOTION_API_KEY is not available in the n8n Code node environment.' });\n  summary.diagnostics = diagnostics;\n  summary.founder_task_created = false;\n  return [{ json: summary }];\n}\n\nasync function notion(method, url, body) {\n  return await httpRequest({\n    method,\n    url,\n    headers: { Authorization: 'Bearer ' + $env.NOTION_API_KEY, 'Notion-Version': '2022-06-28', 'Content-Type': 'application/json' },\n    body,\n    json: true\n  });\n}\n\nconst runDate = String(summary.run_started_at || new Date().toISOString()).slice(0, 10);\nconst taskName = 'Review SEO radar insights - ' + runDate;\nconst topRows = rows.slice(0, 5);\nconst insightLines = topRows.map((row, index) => {\n  const parts = [\n    (index + 1) + '. ' + clip(row.title || row.source_label || 'Untitled', 110),\n    '[' + clip(row.platform || 'unknown', 20) + ']',\n    clip(row.content_hook || row.summary || row.debate_angle || '', 180)\n  ].filter(Boolean);\n  return parts.join(' ');\n});\nconst recommendationLines = topRows.map((row, index) => {\n  const parts = [\n    '- Read #' + (index + 1),\n    clip(row.url || '', 220),\n    clip(row.evidence_to_collect || row.creator_notes || '', 160)\n  ].filter(Boolean);\n  return parts.join(' | ');\n});\nconst emptyBranches = Array.isArray(diagnostics.empty_branches) ? diagnostics.empty_branches : [];\nconst branchCounts = diagnostics.branch_counts || {};\nconst description = [\n  'Daily SEO radar finished successfully.',\n  '',\n  'Why this is worth checking:',\n  ...insightLines,\n  '',\n  'Recommended follow-up:',\n  ...recommendationLines,\n  '',\n  'Branch counts: ' + Object.entries(branchCounts).map(([key, value]) => key + '=' + value).join(', '),\n  emptyBranches.length ? 'Empty branches: ' + emptyBranches.join(', ') : 'Empty branches: none',\n  '',\n  'Open the latest rows in content ideas and turn one of the top signals into a founder post, thread, or video outline today.'\n].join('\\\\n').slice(0, 1900);\n\nconst properties = {\n  'Task name': { title: text(taskName) },\n  Description: { rich_text: text(description) },\n  Status: { status: select('today') },\n  Priority: { select: select(topRows.length >= 3 ? 'High' : 'Medium') },\n  'Effort level': { select: select('Small') },\n  'Task type': { multi_select: multiSelect(['Marketing', 'Engineering']) },\n  'Due date': { date: dateValue(runDate) }\n};\n\nlet taskCreated = false;\ntry {\n  const query = await notion('POST', 'https://api.notion.com/v1/databases/' + encodeURIComponent(tasksDatabaseId) + '/query', {\n    filter: {\n      property: 'Task name',\n      title: { equals: taskName }\n    },\n    page_size: 1\n  });\n  const existing = Array.isArray(query.results) && query.results[0];\n  if (existing && existing.id) {\n    await notion('PATCH', 'https://api.notion.com/v1/pages/' + encodeURIComponent(existing.id), { properties });\n  } else {\n    await notion('POST', 'https://api.notion.com/v1/pages', { parent: { database_id: tasksDatabaseId }, properties });\n  }\n  taskCreated = true;\n} catch (e) {\n  diagnostics.errors = diagnostics.errors || [];\n  diagnostics.errors.push({ branch: 'notion_tasks', message: 'Founder follow-up task sync failed.', error: e.message });\n}\n\nsummary.diagnostics = diagnostics;\nsummary.founder_task_created = taskCreated;\nsummary.digest_text = String(summary.digest_text || 'Daily SEO Discussion Radar') + '\\\\n- Founder follow-up task synced: ' + (taskCreated ? 'yes' : 'no');\nreturn [{ json: summary }];\n"
+        },
+        "id": "32866d58-8a7f-48e6-83d2-59746e91e8d5",
+        "name": "Create Founder Follow-up Task",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2368,
+          256
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "\nlet summary = $input.first().json;\ntry {\n  const founderTaskSummary = $('Create Founder Follow-up Task').first().json;\n  if (founderTaskSummary && founderTaskSummary.digest_text) summary = founderTaskSummary;\n} catch (e) {}\ntry {\n  const notionSummary = $('Notion - Upsert Discussion Pages').first().json;\n  if (notionSummary && notionSummary.digest_text) summary = notionSummary;\n} catch (e) {}\nreturn [{\n  json: {\n    digest_from_email: summary.digest_from_email || 'henedy@contentmaps.ai',\n    digest_email: summary.digest_email || 'abdulrahmanhenedy@gmail.com',\n    digest_text: summary.digest_text || 'No digest generated.'\n  }\n}];\n"
+        },
+        "id": "53680d7f-9c7f-407d-8f80-21a730620029",
+        "name": "Prepare Email Digest",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2624,
+          256
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "\nlet summary = $input.first().json;\ntry {\n  const founderTaskSummary = $('Create Founder Follow-up Task').first().json;\n  if (founderTaskSummary && founderTaskSummary.digest_text) summary = founderTaskSummary;\n} catch (e) {}\ntry {\n  const notionSummary = $('Notion - Upsert Discussion Pages').first().json;\n  if (notionSummary && notionSummary.digest_text) summary = notionSummary;\n} catch (e) {}\nreturn [{\n  json: {\n    digest_from_email: summary.digest_from_email || 'henedy@contentmaps.ai',\n    digest_email: summary.digest_email || 'abdulrahmanhenedy@gmail.com',\n    digest_text: summary.digest_text || 'No digest generated.'\n  }\n}];\n"
+        },
+        "id": "af07c635-ed8a-4e06-a9f5-ebc8dc73bfe0",
+        "name": "Prepare Empty-Run Email Digest",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1584,
+          512
+        ]
+      },
+      {
+        "parameters": {
+          "fromEmail": "={{ $json.digest_from_email }}",
+          "toEmail": "={{ $json.digest_email }}",
+          "subject": "Daily SEO Discussion Radar",
+          "emailFormat": "text",
+          "text": "={{ $json.digest_text }}",
+          "options": {
+            "appendAttribution": false
+          }
+        },
+        "id": "912a685c-eecc-4b32-8962-184487caea39",
+        "name": "Send Email - Daily SEO Discussion Digest",
+        "type": "n8n-nodes-base.emailSend",
+        "typeVersion": 2.1,
+        "position": [
+          2592,
+          656
+        ],
+        "webhookId": "12fcdad7-9ec3-4233-ac25-9b6fa81bfdf9",
+        "onError": "continueRegularOutput"
+      }
+    ],
+    "connections": {
+      "Manual Trigger - Test Start": {
+        "main": [
+          [
+            {
+              "node": "Build Source Requests",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Schedule Trigger - Daily": {
+        "main": [
+          [
+            {
+              "node": "Build Source Requests",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Source Requests": {
+        "main": [
+          [
+            {
+              "node": "Fetch Source Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Source Request": {
+        "main": [
+          [
+            {
+              "node": "Normalize, Dedupe, Score, Digest",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalize, Dedupe, Score, Digest": {
+        "main": [
+          [
+            {
+              "node": "IF - Real Items Collected?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF - Real Items Collected?": {
+        "main": [
+          [
+            {
+              "node": "Notion - Upsert Discussion Pages",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Prepare Empty-Run Email Digest",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Notion - Upsert Discussion Pages": {
+        "main": [
+          [
+            {
+              "node": "Build Google Sheets Rows",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Google Sheets Rows": {
+        "main": [
+          [
+            {
+              "node": "Google Sheets - Append or Update Discussion Row",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Sheets - Append or Update Discussion Row": {
+        "main": [
+          [
+            {
+              "node": "Create Founder Follow-up Task",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Founder Follow-up Task": {
+        "main": [
+          [
+            {
+              "node": "Prepare Email Digest",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Email Digest": {
+        "main": [
+          [
+            {
+              "node": "Send Email - Daily SEO Discussion Digest",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Empty-Run Email Digest": {
+        "main": [
+          [
+            {
+              "node": "Send Email - Daily SEO Discussion Digest",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "tags": [],
+  "meta": {
+    "aiBuilderAssisted": true
+  },
+  "parentFolderId": null,
+  "description": "Production SEO discussion radar: Firecrawl/SearXNG/Apify/StackExchange collection, normalization, OpenRouter digest, Notion/Sheets storage, and diagnostic email.",
+  "scopes": [
+    "workflow:create",
+    "workflow:delete",
+    "workflow:execute",
+    "workflow:execute-chat",
+    "workflow:list",
+    "workflow:move",
+    "workflow:publish",
+    "workflow:read",
+    "workflow:share",
+    "workflow:unpublish",
+    "workflow:unshare",
+    "workflow:update",
+    "workflow:updateRedactionSetting"
+  ],
+  "canExecute": true
+}
